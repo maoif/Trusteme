@@ -1,0 +1,5 @@
+rootProject.name = 'Trusteme'
+
+include('launcher')
+include('trusteme-lib')
+include('reader')
