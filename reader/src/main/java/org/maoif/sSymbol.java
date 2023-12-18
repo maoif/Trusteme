@@ -1,13 +1,13 @@
 package org.maoif;
 
 public class sSymbol extends sExpr {
-    public static final sSymbol SYM_QUOTE = new sSymbol("quote");
-    public static final sSymbol SYM_DEFINE = new sSymbol("define");
-    public static final sSymbol SYM_IF     = new sSymbol("if");
-    public static final sSymbol SYM_BEGIN  = new sSymbol("begin");
-    public static final sSymbol SYM_SET    = new sSymbol("set!");
-    public static final sSymbol SYM_LETREC = new sSymbol("letrec");
-    public static final sSymbol SYM_LAMBDA = new sSymbol("lambda");
+    public static final sSymbol SYM_QUOTE = makeSymbol("quote");
+    public static final sSymbol SYM_DEFINE = makeSymbol("define");
+    public static final sSymbol SYM_IF     = makeSymbol("if");
+    public static final sSymbol SYM_BEGIN  = makeSymbol("begin");
+    public static final sSymbol SYM_SET    = makeSymbol("set!");
+    public static final sSymbol SYM_LETREC = makeSymbol("letrec");
+    public static final sSymbol SYM_LAMBDA = makeSymbol("lambda");
 
     private String value;
 
@@ -23,6 +23,10 @@ public class sSymbol extends sExpr {
     public sSymbol(String src, String val) {
         super(src);
         this.value = val;
+    }
+
+    public static sSymbol makeSymbol(String value) {
+        return new sSymbol(null, value);
     }
 
     public String get() {
