@@ -5,6 +5,8 @@ import java.util.List;
 
 public class sPair extends sExpr {
 
+    // TODO maybe '() should not use sPair
+
     private sExpr car = sNull.INSTANCE;
     private sExpr cdr = sNull.INSTANCE;
 
@@ -48,14 +50,29 @@ public class sPair extends sExpr {
         int len = 1;
         sExpr next = cdr;
         while (!(next instanceof sNull)) {
-            len++;
             if (next instanceof sPair p) {
+                len++;
                 next = p.cdr();
             } else {
                 throw new RuntimeException(String.format(
                         "cannot compute length for improper list: %s", this
                 ));
             }
+        }
+
+        return len;
+    }
+
+    public int improperLength() {
+        if (car instanceof sNull) return 0;
+
+        int len = 1;
+        sExpr next = cdr;
+        while (!(next instanceof sNull)) {
+            if (next instanceof sPair p) {
+                len++;
+                next = p.cdr();
+            } else break;
         }
 
         return len;
