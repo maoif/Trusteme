@@ -19,7 +19,12 @@ dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:32.1.1-jre'
 
-//    implementation 'org.maoif.trusteme:trusteme'
+    // https://mvnrepository.com/artifact/org.graalvm.truffle/truffle-api
+    implementation 'org.graalvm.truffle:truffle-api:23.1.1'
+    // https://mvnrepository.com/artifact/org.graalvm.truffle/truffle-runtime
+    runtimeOnly 'org.graalvm.truffle:truffle-runtime:23.1.1'
+
+//    implementation project(':reader')
     implementation project(':trusteme-lib')
 }
 
@@ -31,7 +36,7 @@ java {
 }
 
 application {
-    mainClass = 'org.maoif.trusteme.Launcher'
+    mainClass = 'org.maoif.TrustemeLauncher'
 }
 
 tasks.named('test') {
