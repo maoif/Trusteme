@@ -17,4 +17,15 @@ public class TsmBeginNode extends TsmNode {
         }
         return bodyNodes[bodyNodes.length - 1].executeGeneric(frame);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("(TsmBeginNode");
+        for (var n : bodyNodes) {
+            sb.append(" ");
+            sb.append(n.toString());
+        }
+        sb.append(")");
+        return sb.toString();
+    }
 }

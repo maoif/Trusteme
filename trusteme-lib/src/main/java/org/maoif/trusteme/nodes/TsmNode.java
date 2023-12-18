@@ -75,4 +75,8 @@ public abstract class TsmNode extends Node {
     public TsmNull executeTsmNull(VirtualFrame frame) throws UnexpectedResultException {
         return TsmTypesGen.expectTsmNull(executeGeneric(frame));
     }
+
+    public TsmVoid executeTsmVoid(VirtualFrame frame) throws UnexpectedResultException {
+        return TsmTypesGen.expectTsmVoid(executeGeneric(frame));
+    }
 }

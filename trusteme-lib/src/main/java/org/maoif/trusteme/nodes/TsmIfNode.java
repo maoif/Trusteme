@@ -35,4 +35,9 @@ public class TsmIfNode extends TsmNode {
             return res != null;
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("(TsmIfNode %s %s %s)", testNode, thenNode, elseNode);
+    }
 }
