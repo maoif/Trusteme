@@ -409,6 +409,7 @@ public class Reader {
                             "more than one datum after dot");
                 }
             } else if (src.peek(rightCloser)) {
+                // TODO maybe return sNull?
                 result.setPosEnd(src.advance(1));
                 break;
             } else if (src.peek() == (char) -1) {
