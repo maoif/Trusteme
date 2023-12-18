@@ -8,4 +8,13 @@ public class TsmBignum extends TsmExpr {
     public TsmBignum(BigInteger val) {
         this.value = val;
     }
+
+    public BigInteger get() {
+        return this.value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
 }

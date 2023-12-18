@@ -15,4 +15,9 @@ public class TsmBool extends TsmExpr {
     public boolean isFalse() {
         return this.equals(FALSE);
     }
+
+    @Override
+    public String toString() {
+        return this == TsmBool.TRUE ? "#t" : "#f";
+    }
 }

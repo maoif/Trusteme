@@ -7,6 +7,6 @@ public class TsmEof extends TsmExpr {
 
     @Override
     public String toString() {
-        return "#<void>";
+        return "#!eof";
     }
 }

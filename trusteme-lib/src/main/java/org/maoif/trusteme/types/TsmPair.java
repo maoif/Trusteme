@@ -1,5 +1,8 @@
 package org.maoif.trusteme.types;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class TsmPair extends TsmExpr {
     private TsmExpr car;
     private TsmExpr cdr;
@@ -33,5 +36,27 @@ public class TsmPair extends TsmExpr {
 
     public void setCdr(TsmExpr val) {
         this.cdr = val;
+    }
+
+    @Override
+    public String toString() {
+        if (car == TsmNull.INSTANCE)  return "()";
+
+        List<String> strs = new LinkedList<>();
+        TsmExpr obj = this;
+        while (true) {
+            if (obj instanceof TsmPair p) {
+                strs.add(p.car().toString());
+                obj = p.cdr();
+            } else if (obj == TsmNull.INSTANCE) {
+                break;
+            } else {
+                strs.add(".");
+                strs.add(obj.toString());
+                break;
+            }
+        }
+
+        return "(" + String.join(" ", strs) + ")";
     }
 }
