@@ -1,23 +1,31 @@
 package org.maoif.trusteme;
 
-import org.maoif.trusteme.nodes.TsmIfNode;
-import org.maoif.trusteme.nodes.TsmNode;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlotKind;
+import org.maoif.trusteme.nodes.*;
 
 import org.maoif.Reader;
 import org.maoif.*;
 
-import org.maoif.trusteme.nodes.TsmQuoteNode;
-import org.maoif.trusteme.nodes.literal.*;
 import org.maoif.trusteme.types.*;
 
 import java.io.File;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * The parser parses the core language as defined by psyntax
  * from the Reader output, and produces TsmNodes.
  */
 public class Parser {
+
+    private final TrustemeLanguage language;
+    private final Stack<FrameDescriptor.Builder> frameDescriptorBuilders;
+
+    public Parser(TrustemeLanguage language, FrameDescriptor.Builder builder) {
+        this.language = language;
+        this.frameDescriptorBuilders = new Stack<>();
+        this.frameDescriptorBuilders.push(builder);
+    }
 
     public TsmNode parse(File file) {
         return parse(Reader.read(file));
@@ -28,37 +36,37 @@ public class Parser {
     }
 
     private TsmNode parse(sExpr expr) {
-        // the following up to TsmSymbolLiteralNode may be unnecessary
-        // because psyntax wraps all literals in quotes
-        if (expr instanceof sBool e) {
-            return new TsmBoolLiteralNode(e.get());
-        } else if (expr instanceof sChar e) {
-            return new TsmCharLiteralNode(e.get());
-        } else if (expr instanceof sString e) {
-            return new TsmStringLiteralNode(e.get());
-        } else if (expr instanceof sFixnum e) {
-            return new TsmFixnumLiteralNode(e.get());
-        } else if (expr instanceof sFlonum e) {
-            return new TsmFlonumLiteralNode(e.get());
-        } else if (expr instanceof sBignum e) {
-            return new TsmBignumLiteralNode(e.get());
-        } else if (expr instanceof sSymbol e) {
-            return new TsmSymbolLiteralNode(e.get());
-        } else if (expr instanceof sNull) {
-            return new TsmNullLiteralNode();
-        } else if (expr instanceof sPair e) {
+        if (expr instanceof sPair e) {
             TsmNode res = parseSpecialForm(e);
             if (res == null) return parseApplication(e);
             else             return res;
+        } else if (expr instanceof sSymbol sym) {
+            return new TsmSymbolNode(-1, new TsmSymbol(sym.get()));
+        } else if (expr instanceof sBool e) {
+            throw new ParseException("Bool literal must be quoted: %s", expr);
+        } else if (expr instanceof sChar e) {
+            throw new ParseException("Char literal must be quoted: %s", expr);
+        } else if (expr instanceof sString e) {
+            throw new ParseException("String literal must be quoted: %s", expr);
+        } else if (expr instanceof sFixnum e) {
+            throw new ParseException("Fixnum literal must be quoted: %s", expr);
+        } else if (expr instanceof sFlonum e) {
+            throw new ParseException("Flonum literal must be quoted: %s", expr);
+        } else if (expr instanceof sBignum e) {
+            throw new ParseException("Bignum literal must be quoted: %s", expr);
         } else if (expr instanceof sVector) {
             throw new ParseException("Vector literal must be quoted: %s", expr);
-        } else
-            throw new ParseException("Unknown expression type: %s", expr);
+        } else if (expr instanceof sNull) {
+            throw new ParseException("Null literal must be quoted: %s", expr);
+        } else throw new ParseException("Unknown expression type: %s", expr);
     }
 
     private TsmNode parseSpecialForm(sPair p) {
         sExpr head = p.car();
         int len = p.length();
+        System.out.println("parseSpecialForm");
+        System.out.printf("\t p: %s, len: %d, head: %s\n", p, len, head);
+        if (len == 0) throw new ParseException("invalid form: %s", p);
 
         if (head instanceof sSymbol h) {
             if (symbolEq(h, sSymbol.SYM_DEFINE)) {
@@ -66,8 +74,10 @@ public class Parser {
                     sExpr id = list_ref(p, 1);
                     sExpr val = list_ref(p, 2);
 
-                    if (id != null && val != null) {
-
+                    if (id != null && val != null && id instanceof sSymbol s) {
+                        TsmSymbol sym = new TsmSymbol(s.get());
+                        return new TsmDefineNode(frameDescriptorBuilders.peek().addSlots(1, FrameSlotKind.Object),
+                                sym, parse(val));
                     }
                 }
 
@@ -75,6 +85,7 @@ public class Parser {
             } else if (symbolEq(h, sSymbol.SYM_QUOTE)) {
                 if (len == 2) {
                     sExpr datum = list_ref(p, 1);
+                    System.out.println(datum);
                     if (datum != null)
                         return new TsmQuoteNode(parseQuoted(datum));
                 }
@@ -94,30 +105,100 @@ public class Parser {
                 throw new ParseException("Invalid if form: %s", p);
             } else if (symbolEq(h, sSymbol.SYM_BEGIN)) {
                 if (len > 1) {
-                    throw new UnsupportedOperationException();
+                    if (p.cdr() instanceof sPair pp) {
+                        sExpr[] bodyE = list_to_array(pp);
+                        TsmNode[] bodyNodes = new TsmNode[bodyE.length];
+                        for (int i = 0; i < bodyE.length; i++) {
+                            bodyNodes[i] = parse(bodyE[i]);
+                        }
+                        return new TsmBeginNode(bodyNodes);
+                    }
                 }
 
-                throw new ParseException(
-                        "Invalid begin form: %s, at least one expression is required", p);
+                throw new ParseException("Invalid begin form; %s", p);
             } else if (symbolEq(h, sSymbol.SYM_SET)) {
                 if (len == 3) {
                     sExpr id = list_ref(p, 1);
                     sExpr val = list_ref(p, 2);
 
-                    if (id != null && val != null) {
-
+                    if (id != null && val != null && id instanceof sSymbol s) {
+                        TsmSymbol sym = new TsmSymbol(s.get());
+                        return new TsmSetNode(sym, parse(val));
                     }
                 }
 
                 throw new ParseException("Invalid set! form: %s", p);
             } else if (symbolEq(h, sSymbol.SYM_LAMBDA)) {
                 if (len >= 3) {
-                    // TODO support dotted arg?
                     sExpr params = list_ref(p, 1);
                     // params could be a single or a list
                     sExpr body = cdr(cdr(p));
 
-                    throw new UnsupportedOperationException();
+                    if (params != null && body != null && body instanceof sPair bs && bs.length() >= 1) {
+                        int firstSlot = -1;
+                        int slotCount = 1;
+                        int dotArgSlot = -1;
+                        TsmSymbol[] paramNames = null;
+                        var builder = FrameDescriptor.newBuilder();
+
+                        frameDescriptorBuilders.push(builder);
+
+                        // for the 1st lexical scope object
+                        int lexicalSlot = builder.addSlots(1, FrameSlotKind.Object);
+
+                        if (params instanceof sSymbol s) {
+                            // (lambda args body...)
+                            firstSlot = builder.addSlots(1, FrameSlotKind.Object);
+                            paramNames = new TsmSymbol[1];
+                            paramNames[0] = (TsmSymbol) parseQuoted(params);
+                        } else if (params instanceof sPair pp) {
+                            // (lambda (args ...) body...)
+                            if (isImproper(pp)) {
+                                // (lambda (a b c . d) ...)
+                                sExpr[] ppp = improper_list_to_array(pp);
+                                if (!allSymbols(ppp))
+                                    throw new ParseException("Invalid lambda arguments: %s", p);
+
+                                paramNames = new TsmSymbol[ppp.length];
+                                for (int i = 0; i < ppp.length; i++)
+                                    paramNames[i] = (TsmSymbol) parseQuoted(ppp[i]);
+
+                                slotCount = pp.improperLength();
+                                firstSlot = builder.addSlots(slotCount, FrameSlotKind.Object);
+                                dotArgSlot = builder.addSlots(1, FrameSlotKind.Object);
+                            } else {
+                                // (lambda (a b c) ...)
+                                sExpr[] ppp = list_to_array(pp);
+                                if (!allSymbols(ppp))
+                                    throw new ParseException("Invalid lambda arguments: %s", p);
+
+                                slotCount = ppp.length;
+                                if (slotCount > 0) {
+                                    firstSlot = builder.addSlots(slotCount, FrameSlotKind.Object);
+
+                                    paramNames = new TsmSymbol[ppp.length];
+                                    for (int i = 0; i < ppp.length; i++)
+                                        paramNames[i] = (TsmSymbol) parseQuoted(ppp[i]);
+                                }
+                            }
+                        }
+
+
+
+                        sExpr[] bodyE = list_to_array(bs);
+                        TsmNode[] bodyNodes = new TsmNode[bodyE.length];
+                        for (int i = 0; i < bodyE.length; i++) {
+                            bodyNodes[i] = parse(bodyE[i]);
+                        }
+
+                        // TODO passing `language` arg will result in exception
+                        TsmRootNode root = TsmRootNode.create(null, frameDescriptorBuilders.peek().build(),
+                                lexicalSlot, firstSlot, slotCount, dotArgSlot, paramNames, bodyNodes);
+
+                        frameDescriptorBuilders.pop();
+
+                        return new TsmLambdaNode(new TsmProcedure(root.getCallTarget()));
+                    }
                 }
 
                 throw new ParseException("Invalid lambda form: %s", p);
@@ -127,7 +208,9 @@ public class Parser {
                 if (len >= 3) {
                     sExpr bs = p.cdr();
                     if (bs instanceof sPair bindings) {
+//                        frameDescriptors.push(new FrameDescriptor());
                         throw new UnsupportedOperationException();
+//                        frameDescriptors.pop();
                     }
                 }
 
@@ -176,8 +259,21 @@ public class Parser {
         // ((lambda (...) ...) arg ...) -> (LambdaLiteralNode TsmNode ...)
         // ((((op))) arg ...)           -> (TsmAppNode(TsmAppNode(TsmAppNode)) TsmNode ...)
 
+        var operator = parse(car(p));
+        if (p.length() == 1)
+            return new TsmAppNode(operator);
+        else {
+            sExpr args = p.cdr();
+            if (args instanceof sPair as) {
+                sExpr[] rands = list_to_array(as);
+                TsmNode[] operands = new TsmNode[rands.length];
+                for (int i = 0; i < rands.length; i++) {
+                    operands[i] = parse(rands[i]);
+                }
 
-        return null;
+                return new TsmAppNode(operator, operands);
+            } else throw new ParseException("Invalid call expression: %s", p);
+        }
     }
 
     //=======================================================
@@ -209,17 +305,67 @@ public class Parser {
 
         sExpr res = e;
         for (int j = i; j > 0; j--) {
-            res = cdr(e);
+            res = cdr(res);
             if (res == null) return null;
         }
 
         return car(res);
     }
 
-    private static sExpr list_to_array(sExpr p) {
-        return null;
+    private static sExpr[] list_to_array(sPair p) {
+        if (p.car() == sNull.INSTANCE) return new sExpr[0];
+
+        List<sExpr> res = new LinkedList<>();
+        res.add(p.car());
+
+        sExpr cdr = p.cdr();
+        while (!(cdr instanceof sNull)) {
+            if (cdr instanceof sPair pp) {
+                res.add(pp.car());
+                cdr = pp.cdr();
+            } else throw new ParseException("improper list not allowed");
+        }
+
+        return res.toArray(new sExpr[0]);
     }
 
+    private static sExpr[] improper_list_to_array(sPair p) {
+        if (p.car() == sNull.INSTANCE)
+            throw new ParseException("improper list should at least have 2 items");
+
+        List<sExpr> res = new LinkedList<>();
+        res.add(p.car());
+
+        sExpr cdr = p.cdr();
+        while (!(cdr instanceof sNull)) {
+            if (cdr instanceof sPair pp) {
+                res.add(pp.car());
+                cdr = pp.cdr();
+            } else {
+                res.add(cdr);
+                break;
+            }
+        }
+
+        return res.toArray(new sExpr[0]);
+    }
+
+    private static boolean isImproper(sPair p) {
+        sExpr cdr = p.cdr();
+        while (true) {
+            if (cdr instanceof sPair pp) cdr = pp.cdr();
+            else if (cdr instanceof sNull) break;
+            else return true;
+        }
+
+        return false;
+    }
+
+    private static boolean allSymbols(sExpr[] es) {
+        for (var e : es)
+            if (!(e instanceof sSymbol)) return false;
+        return true;
+    }
 
     private static class ParseException extends RuntimeException {
 
