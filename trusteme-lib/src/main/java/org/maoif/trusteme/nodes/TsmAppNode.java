@@ -39,27 +39,25 @@ public class TsmAppNode extends TsmNode {
             TsmProcedure proc = rator.executeTsmProcedure(frame);
 
             if (rands == null) {
-                Object[] args = new TsmExpr[1];
+                // TODO how to reconcile lexical scope and TsmExp?
+                Object[] args = new Object[1];
                 args[0] = proc.getLexicalScope();
-//                proc.getCallTarget().call(args);
-                callNode.call(proc.getCallTarget(), args);
+                return callNode.call(proc.getCallTarget(), args);
 
             } else {
                 CompilerAsserts.compilationConstant(this.rands.length);
 
-                Object[] args = new TsmExpr[rands.length + 1];
+                Object[] args = new Object[rands.length + 1];
                 args[0] = proc.getLexicalScope();
                 for (int i = 0; i < rands.length; i++) {
                     args[i + 1] = rands[i].executeGeneric(frame);
                 }
 
-                callNode.call(proc.getCallTarget(), args);
+                return callNode.call(proc.getCallTarget(), args);
             }
         } catch (UnexpectedResultException e) {
             throw new RuntimeException(e);
         }
-
-        return null;
     }
 
     @Override
