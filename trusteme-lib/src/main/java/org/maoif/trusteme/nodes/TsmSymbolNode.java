@@ -4,8 +4,12 @@ import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import org.maoif.trusteme.types.TsmExpr;
 import org.maoif.trusteme.types.TsmPair;
 import org.maoif.trusteme.types.TsmSymbol;
+
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentMap;
 
 // TODO optimize this, e.g., cache the result
 
@@ -37,28 +41,24 @@ public class TsmSymbolNode extends TsmNode {
                 Object o = lexicalScope.getObject(i);
                 if (o instanceof TsmPair p && p.car() instanceof TsmSymbol s) {
                     if (s.get().equals(sym.get())) return p.cdr();
-                } else throw new RuntimeException("Bad frame object type");
+                }
+//                else {
+//                    System.out.println(o);
+//                    throw new RuntimeException("Bad frame object type");
+//                }
             }
 
-            // TODO if lexicalScope is already the top frame and value not found, bug out.
-            System.out.println("TsmSymbolNode.executeGeneric sym: " + sym.get());
-            System.out.println(lexicalScope.getObject(0));
-
-            lexicalScope = (Frame) lexicalScope.getObject(0);
+            Object prevFrame = lexicalScope.getObject(0);
+            if (prevFrame == null) {
+                // we are at top frame
+                var topEnv = (ConcurrentMap<String, TsmExpr>) lexicalScope.getObject(1);
+                TsmExpr v = topEnv.get(sym.get());
+                if (v == null) throw new RuntimeException("Unbound identifier: " + sym.get());
+                else           return v;
+            } else {
+                lexicalScope = (Frame) prevFrame;
+            }
         }
-
-//        Frame frame = virtualFrame;
-//        Object value = frame.getObject(slot);
-//        while (value == null) {
-//            frame = this.getLexicalScope(frame);
-//            if (frame == null) {
-//                throw new RuntimeException("Unknown variable: " + sym);
-//            }
-//
-//            value = frame.getObject(slot);
-//        }
-//
-//        return value;
     }
 
     private Frame getLexicalScope(Frame frame) {

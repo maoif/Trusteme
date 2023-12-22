@@ -7,6 +7,8 @@ import org.maoif.trusteme.types.TsmPair;
 import org.maoif.trusteme.types.TsmSymbol;
 import org.maoif.trusteme.types.TsmVoid;
 
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * (set! var val)
  *
@@ -44,11 +46,23 @@ public class TsmSetNode extends TsmNode {
                         p.setCdr((TsmExpr) value);
                         return TsmVoid.INSTANCE;
                     }
-                } else throw new RuntimeException("Bad frame object type");
+                }
+//                else throw new RuntimeException("Bad frame object type");
             }
 
-            // TODO if lexicalScope is already the top frame and value not found, bug out.
-            lexicalScope = (Frame) lexicalScope.getObject(0);
+            Object prevFrame = lexicalScope.getObject(0);
+            if (prevFrame == null) {
+                // we are at top frame
+                var topEnv = (ConcurrentMap<String, TsmExpr>) lexicalScope.getObject(1);
+                TsmExpr v = topEnv.get(sym.get());
+                if (v == null) throw new RuntimeException("Unbound identifier: " + sym.get());
+                else {
+                    topEnv.put(sym.get(), (TsmExpr) value);
+                    return TsmVoid.INSTANCE;
+                }
+            } else {
+                lexicalScope = (Frame) prevFrame;
+            }
         }
     }
 

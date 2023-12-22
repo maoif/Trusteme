@@ -1,11 +1,12 @@
 package org.maoif.trusteme.nodes;
 
+import com.google.common.base.Joiner;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.api.nodes.RootNode;
 import org.maoif.trusteme.types.TsmSymbol;
 
 import java.util.Arrays;
@@ -54,7 +55,7 @@ public class TsmRootNode extends RootNode {
         int paramIndex = 0;
         if (slotNum > 0)
             for (int i = slot; i < slot + slotNum; i++)
-                readNodes.add(new TsmReadArgNode(slot, params[paramIndex++]));
+                readNodes.add(new TsmReadArgNode(i, params[paramIndex++]));
 
         if (dotArgSlot != -1)
             // pack the rest args into a list
@@ -69,4 +70,8 @@ public class TsmRootNode extends RootNode {
         return new TsmRootNode(language, frameDescriptor, newBodyNodes);
     }
 
+    @Override
+    public String toString() {
+        return "(TsmRootNode " + Joiner.on(' ').join(bodyNodes) + ")";
+    }
 }

@@ -9,6 +9,8 @@ import org.maoif.trusteme.types.TsmPair;
 import org.maoif.trusteme.types.TsmSymbol;
 import org.maoif.trusteme.types.TsmVoid;
 
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * Introduce a new binding (sym . value) to the current environment.
  */
@@ -43,26 +45,26 @@ public class TsmDefineNode extends TsmNode {
     @Override
     public TsmVoid executeGeneric(VirtualFrame virtualFrame) {
         Object value = this.valueNode.executeGeneric(virtualFrame);
-        virtualFrame.setObject(this.slot, new TsmPair(this.sym, (TsmExpr) value));
+//        virtualFrame.setObject(this.slot, new TsmPair(this.sym, (TsmExpr) value));
+
+        // TODO cache the top frame
+        Frame topFrame = getTopFrame(virtualFrame);
+        var topEnv = (ConcurrentMap<String, TsmExpr>) topFrame.getObject(1);
+        topEnv.put(sym.get(), (TsmExpr) value);
 
         return TsmVoid.INSTANCE;
+    }
 
-//        Frame lexicalScope = virtualFrame;
-//        while (true) {
-//            int num = lexicalScope.getFrameDescriptor().getNumberOfSlots();
-//            for (int i = 1; i < num; i++) {
-//                Object o = lexicalScope.getObject(i);
-//                if (o instanceof TsmPair p && p.car() instanceof TsmSymbol s) {
-//                    if (s.get().equals(sym.get())) {
-//                        p.setCdr((TsmExpr) value);
-//                        return TsmVoid.INSTANCE;
-//                    }
-//                } else throw new RuntimeException("Bad frame object type");
-//            }
-//
-//            // TODO if lexicalScope is already the top frame and value not found, bug out.
-//            lexicalScope = (Frame) lexicalScope.getObject(0);
-//        }
+    private static Frame getTopFrame(VirtualFrame virtualFrame) {
+        Frame f = virtualFrame;
+        while (f.getObject(0) != null) {
+            if (f.getObject(0) instanceof Frame ff)
+                f = ff;
+            else throw new RuntimeException(
+                    "Bad frame structure, first slot should be materialized frame");
+        }
+
+        return f;
     }
 
     @Override
