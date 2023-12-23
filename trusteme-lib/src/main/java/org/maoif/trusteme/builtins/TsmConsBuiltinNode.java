@@ -1,12 +1,12 @@
 package org.maoif.trusteme.builtins;
 
-import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import org.maoif.trusteme.types.TsmPair;
 
-public class TsmCdrBuiltinNode extends TsmBuiltinNode {
-    public TsmCdrBuiltinNode() {
-        super("cdr");
+import org.maoif.trusteme.types.TsmExpr;
+import org.maoif.trusteme.types.TsmPair;
+public class TsmConsBuiltinNode extends TsmBuiltinNode {
+    public TsmConsBuiltinNode() {
+        super("cons");
     }
 
     @Override
@@ -14,11 +14,9 @@ public class TsmCdrBuiltinNode extends TsmBuiltinNode {
         Object[] args = frame.getArguments();
         if (args.length == 0)
             throw new RuntimeException("Lexical scope is lost");
-        if (args.length != 2)
+        if (args.length != 3)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        if (args[1] instanceof TsmPair p) {
-            return p.cdr();
-        } else throw new RuntimeException("Not a pair");
+        return new TsmPair((TsmExpr) args[1], (TsmExpr) args[2]);
     }
 }
