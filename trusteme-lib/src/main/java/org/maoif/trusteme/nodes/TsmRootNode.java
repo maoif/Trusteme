@@ -59,7 +59,8 @@ public class TsmRootNode extends RootNode {
 
         if (dotArgSlot != -1)
             // pack the rest args into a list
-            readNodes.add(new TsmReadDotArgNode(params.length - 1, dotArgSlot, params[paramIndex]));
+            // params.length because of the 1st lexical scope arg
+            readNodes.add(new TsmReadDotArgNode(params.length, dotArgSlot, params[paramIndex]));
 
         TsmNode[] allReadNodes = readNodes.toArray(new TsmNode[0]);
         TsmNode[] newBodyNodes = new TsmNode[bodyNodes.length + readNodes.size()];

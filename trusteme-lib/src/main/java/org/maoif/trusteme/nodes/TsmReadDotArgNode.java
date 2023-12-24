@@ -30,17 +30,20 @@ public class TsmReadDotArgNode extends TsmReadArgNode {
     public Object executeGeneric(VirtualFrame frame) {
         var args = frame.getArguments();
         TsmPair res = new TsmPair();
+        TsmPair next = res;
 
         int i = this.argIndex;
         while (i < args.length) {
-            if (res.car() == TsmNull.INSTANCE)
-                res.setCar((TsmExpr) args[i++]);
-            else
-                res.setCdr(new TsmPair((TsmExpr) args[i++]));
+            if (next.car() == TsmNull.INSTANCE)
+                next.setCar((TsmExpr) args[i++]);
+            else {
+                next.setCdr(new TsmPair((TsmExpr) args[i++]));
+                next = (TsmPair) next.cdr();
+            }
         }
 
         frame.getFrameDescriptor().setSlotKind(this.argSlot, FrameSlotKind.Object);
-        frame.setObject(this.argSlot, res);
+        frame.setObject(this.argSlot, new TsmPair(this.sym, res));
 
         return TsmVoid.INSTANCE;
     }
