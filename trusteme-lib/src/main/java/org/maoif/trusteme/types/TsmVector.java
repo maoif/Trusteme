@@ -21,4 +21,21 @@ public class TsmVector extends TsmExpr {
         values[i] = v;
     }
 
+    @Override
+    public String toString() {
+        if (values == null) return "#()";
+
+        StringBuilder sb = new StringBuilder("#(");
+        for (int i = 0; i < values.length; i++) {
+            if (i == values.length - 1)
+                sb.append(values[i].toString());
+            else {
+                sb.append(values[i].toString());
+                sb.append(" ");
+            }
+        }
+        sb.append(")");
+
+        return sb.toString();
+    }
 }
