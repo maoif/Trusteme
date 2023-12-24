@@ -7,5 +7,9 @@ public class TsmChar extends TsmExpr {
         this.value = val;
     }
 
+    @Override
+    public String toString() {
+        return String.valueOf(this.value);
+    }
 
 }
