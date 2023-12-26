@@ -3,9 +3,8 @@ package org.maoif.trusteme.nodes;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import org.maoif.trusteme.types.TsmExpr;
+import org.maoif.trusteme.TailCallException;
 import org.maoif.trusteme.types.TsmProcedure;
 
 /**
@@ -17,7 +16,7 @@ public class TsmAppNode extends TsmNode {
     @Children
     private TsmNode[] rands;
     @Child
-    private IndirectCallNode callNode = IndirectCallNode.create();
+    public TsmAppDispatchNode dispatchNode = TsmAppDispatchNodeGen.create();
 
     /**
      * For 0-arity application.
@@ -37,26 +36,40 @@ public class TsmAppNode extends TsmNode {
     public Object executeGeneric(VirtualFrame frame) {
         try {
             TsmProcedure proc = rator.executeTsmProcedure(frame);
+            Object[] args;
 
             if (rands == null) {
                 // TODO how to reconcile lexical scope and TsmExp?
-                Object[] args = new Object[1];
+                args = new Object[1];
                 args[0] = proc.getLexicalScope();
-                return callNode.call(proc.getCallTarget(), args);
-
             } else {
                 CompilerAsserts.compilationConstant(this.rands.length);
 
-                Object[] args = new Object[rands.length + 1];
+                args = new Object[rands.length + 1];
                 args[0] = proc.getLexicalScope();
                 for (int i = 0; i < rands.length; i++) {
                     args[i + 1] = rands[i].executeGeneric(frame);
                 }
-
-                return callNode.call(proc.getCallTarget(), args);
             }
+
+            CompilerAsserts.compilationConstant(this.isInTail);
+            if (this.isInTail)
+                throw new TailCallException(proc.getCallTarget(), args);
+            else
+                return call(frame, proc.getCallTarget(), args);
         } catch (UnexpectedResultException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private Object call(VirtualFrame frame, CallTarget callTarget, Object[] args) {
+        while (true) {
+            try {
+                return this.dispatchNode.executeDispatch(frame, callTarget, args);
+            } catch (TailCallException e) {
+                callTarget = e.callTarget;
+                args = e.args;
+            }
         }
     }
 
