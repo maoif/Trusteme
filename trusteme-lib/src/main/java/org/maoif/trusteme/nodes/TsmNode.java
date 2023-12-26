@@ -1,5 +1,6 @@
 package org.maoif.trusteme.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -14,6 +15,18 @@ import java.math.BigInteger;
 @TypeSystemReference(TsmTypes.class)
 @NodeInfo(language = "Trusteme", shortName = "tsm", description = "Base node for all nodes")
 public abstract class TsmNode extends Node {
+    @CompilerDirectives.CompilationFinal
+    protected boolean isInTail = false;
+
+    public boolean isTail() {
+        return this.isInTail;
+    }
+
+    public TsmNode setTail() {
+        this.isInTail = true;
+        return this;
+    }
+
     public abstract Object executeGeneric(VirtualFrame frame);
 
 //    public TsmFixnum executeLong(VirtualFrame frame) throws UnexpectedResultException {

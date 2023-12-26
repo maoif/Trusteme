@@ -98,7 +98,8 @@ public class Parser {
                     sExpr elseBranch = list_ref(p, 3);
 
                     if (test != null && thenBranch != null && elseBranch != null) {
-                        return new TsmIfNode(parse(test), parse(thenBranch), parse(elseBranch));
+                        return new TsmIfNode(parse(test), parse(thenBranch), parse(elseBranch))
+                                .setTail();
                     }
                 }
 
@@ -111,7 +112,8 @@ public class Parser {
                         for (int i = 0; i < bodyE.length; i++) {
                             bodyNodes[i] = parse(bodyE[i]);
                         }
-                        return new TsmBeginNode(bodyNodes);
+
+                        return new TsmBeginNode(bodyNodes).setTail();
                     }
                 }
 
@@ -190,6 +192,7 @@ public class Parser {
                         for (int i = 0; i < bodyE.length; i++) {
                             bodyNodes[i] = parse(bodyE[i]);
                         }
+                        bodyNodes[bodyNodes.length - 1].setTail();
 
                         // TODO passing `language` arg will result in exception
                         TsmRootNode root = TsmRootNode.create(null, frameDescriptorBuilders.peek().build(),

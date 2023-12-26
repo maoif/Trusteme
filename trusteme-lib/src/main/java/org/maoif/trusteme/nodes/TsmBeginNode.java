@@ -19,6 +19,12 @@ public class TsmBeginNode extends TsmNode {
     }
 
     @Override
+    public TsmNode setTail() {
+        this.bodyNodes[this.bodyNodes.length - 1].setTail();
+        return this;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("(TsmBeginNode");
         for (var n : bodyNodes) {

@@ -37,6 +37,13 @@ public class TsmIfNode extends TsmNode {
     }
 
     @Override
+    public TsmNode setTail() {
+        this.thenNode.setTail();
+        this.elseNode.setTail();
+        return this;
+    }
+
+    @Override
     public String toString() {
         return String.format("(TsmIfNode %s %s %s)", testNode, thenNode, elseNode);
     }
