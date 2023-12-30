@@ -19,7 +19,7 @@ public abstract class TsmAppDispatchNode extends Node {
     // Cache several direct call nodes for performance.
     @Specialization(limit = "3",
             guards = "callTarget == cachedCallTarget")
-    protected static Object doDirect(VirtualFrame frame, CallTarget callTarget, Object[] arguments,
+    protected Object doDirect(VirtualFrame frame, CallTarget callTarget, Object[] arguments,
                                      @Cached("callTarget") CallTarget cachedCallTarget,
                                      @Cached("create(callTarget)") DirectCallNode callNode) {
         return callNode.call(arguments);
@@ -27,7 +27,7 @@ public abstract class TsmAppDispatchNode extends Node {
 
     // Fall back to indirect call if number of called procedures exceeds the limit above.
     @Specialization(replaces = "doDirect")
-    protected static Object doIndirect(VirtualFrame frame, CallTarget callTarget, Object[] arguments,
+    protected Object doIndirect(VirtualFrame frame, CallTarget callTarget, Object[] arguments,
                                        @Cached("create()") IndirectCallNode callNode) {
         return callNode.call(callTarget, arguments);
     }
