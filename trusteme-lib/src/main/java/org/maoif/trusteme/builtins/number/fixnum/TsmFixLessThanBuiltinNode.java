@@ -1,16 +1,18 @@
-package org.maoif.trusteme.builtins;
-
+package org.maoif.trusteme.builtins.number.fixnum;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+
+import org.maoif.trusteme.builtins.TsmBuiltinNode;
+import org.maoif.trusteme.types.TsmBool;
 import org.maoif.trusteme.types.TsmFixnum;
 
-public class TsmFixDivBuiltinNode extends TsmBuiltinNode {
-    public TsmFixDivBuiltinNode() {
-        super("fx/");
+public class TsmFixLessThanBuiltinNode extends TsmBuiltinNode {
+    public TsmFixLessThanBuiltinNode() {
+        super("fx<");
     }
 
     @Override
-    public TsmFixnum executeTsmFixnum(VirtualFrame frame) {
+    public TsmBool executeTsmBool(VirtualFrame frame) {
         Object[] args = frame.getArguments();
         if (args.length == 0)
             throw new RuntimeException("Lexical scope is lost");
@@ -22,23 +24,18 @@ public class TsmFixDivBuiltinNode extends TsmBuiltinNode {
             res = n.get();
         else throw new RuntimeException("Type error: not a fixnum: " + args[1]);
 
-        if (args.length == 2) return new TsmFixnum(Math.floorDiv(1, res));
-
         for (int i = 2; i < args.length; i++) {
             if (args[i] instanceof TsmFixnum nn) {
-                try {
-                    res = Math.floorDiv(res, nn.get());
-                } catch (ArithmeticException e) {
-                    throw new RuntimeException("Fixnum operation out of range");
-                }
+                if (res < nn.get()) res = nn.get();
+                else                return TsmBool.FALSE;
             } else throw new RuntimeException("Type error: not a fixnum: " + args[i]);
         }
 
-        return new TsmFixnum(res);
+        return TsmBool.TRUE;
     }
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        return executeTsmFixnum(frame);
+        return executeTsmBool(frame);
     }
 }

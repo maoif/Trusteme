@@ -1,13 +1,13 @@
-package org.maoif.trusteme.builtins;
-
+package org.maoif.trusteme.builtins.number.fixnum;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import org.maoif.trusteme.builtins.TsmBuiltinNode;
 import org.maoif.trusteme.types.TsmFixnum;
 
-public class TsmFixAddBuiltinNode extends TsmBuiltinNode {
-    public TsmFixAddBuiltinNode() {
-        super("fx+");
+public class TsmFixMulBuiltinNode extends TsmBuiltinNode {
+    public TsmFixMulBuiltinNode() {
+        super("fx*");
     }
 
     @Override
@@ -16,13 +16,13 @@ public class TsmFixAddBuiltinNode extends TsmBuiltinNode {
         if (args.length == 0)
             throw new RuntimeException("Lexical scope is lost");
         if (args.length == 1)
-            return new TsmFixnum(0);
+            return new TsmFixnum(1);
 
-        long res = 0;
+        long res = 1;
         for (int i = 1; i < args.length; i++) {
             if (args[i] instanceof TsmFixnum n) {
                 try {
-                    res = Math.addExact(res, n.get());
+                    res = Math.multiplyExact(res, n.get());
                 } catch (ArithmeticException e) {
                     throw new RuntimeException("Fixnum operation out of range");
                 }

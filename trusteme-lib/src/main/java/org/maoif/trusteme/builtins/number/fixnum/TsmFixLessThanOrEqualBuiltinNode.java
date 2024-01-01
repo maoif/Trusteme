@@ -1,7 +1,8 @@
-package org.maoif.trusteme.builtins;
+package org.maoif.trusteme.builtins.number.fixnum;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import org.maoif.trusteme.builtins.TsmBuiltinNode;
 import org.maoif.trusteme.types.TsmBool;
 import org.maoif.trusteme.types.TsmFixnum;
 

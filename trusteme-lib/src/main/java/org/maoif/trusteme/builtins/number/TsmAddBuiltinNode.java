@@ -1,9 +1,10 @@
-package org.maoif.trusteme.builtins;
+package org.maoif.trusteme.builtins.number;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import org.maoif.trusteme.builtins.TsmBuiltinNode;
 import org.maoif.trusteme.nodes.TsmNode;
 import org.maoif.trusteme.types.TsmBignum;
 import org.maoif.trusteme.types.TsmExpr;
