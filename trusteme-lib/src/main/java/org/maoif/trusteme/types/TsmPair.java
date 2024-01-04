@@ -57,7 +57,7 @@ public class TsmPair extends TsmExpr {
         return len;
     }
 
-    private boolean isImproper() {
+    public boolean isImproper() {
         if (this.car == TsmNull.INSTANCE) return false;
 
         TsmExpr next = cdr;
@@ -111,6 +111,10 @@ public class TsmPair extends TsmExpr {
         }
 
         return vec;
+    }
+
+    public TsmExpr[] rawArray() {
+        return toVector().rawArray();
     }
 
     @Override
