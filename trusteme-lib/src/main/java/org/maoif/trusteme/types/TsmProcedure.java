@@ -34,4 +34,8 @@ public class TsmProcedure extends TsmExpr {
         return "#<procedure>";
     }
 
+    @Override
+    public String write() {
+        return "#<procedure>";
+    }
 }

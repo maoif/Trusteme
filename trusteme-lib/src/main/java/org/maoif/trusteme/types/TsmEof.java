@@ -9,4 +9,9 @@ public class TsmEof extends TsmExpr {
     public String toString() {
         return "#!eof";
     }
+
+    @Override
+    public String write() {
+        return toString();
+    }
 }

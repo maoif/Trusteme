@@ -6,4 +6,18 @@ public class TsmString extends TsmExpr {
     public TsmString(String val) {
         this.value = val;
     }
+
+    @Override
+    public String toString() {
+        return this.value;
+    }
+
+    public String get() {
+        return this.value;
+    }
+
+    @Override
+    public String write() {
+        return "\"" + this.value + "\"";
+    }
 }

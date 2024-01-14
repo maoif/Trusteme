@@ -138,4 +138,26 @@ public class TsmPair extends TsmExpr {
 
         return "(" + String.join(" ", strs) + ")";
     }
+
+    @Override
+    public String write() {
+        if (car == TsmNull.INSTANCE)  return "()";
+
+        List<String> strs = new LinkedList<>();
+        TsmExpr obj = this;
+        while (true) {
+            if (obj instanceof TsmPair p) {
+                strs.add(p.car().write());
+                obj = p.cdr();
+            } else if (obj == TsmNull.INSTANCE) {
+                break;
+            } else {
+                strs.add(".");
+                strs.add(obj.write());
+                break;
+            }
+        }
+
+        return "(" + String.join(" ", strs) + ")";
+    }
 }

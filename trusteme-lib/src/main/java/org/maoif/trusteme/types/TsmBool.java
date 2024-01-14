@@ -16,8 +16,23 @@ public class TsmBool extends TsmExpr {
         return this.equals(FALSE);
     }
 
+    public TsmBool negate() {
+        if (this == TRUE) return FALSE;
+        else              return TRUE;
+    }
+
+    public static TsmBool get(boolean b) {
+        if (b) return TRUE;
+        else   return FALSE;
+    }
+
     @Override
     public String toString() {
         return this == TsmBool.TRUE ? "#t" : "#f";
+    }
+
+    @Override
+    public String write() {
+        return toString();
     }
 }

@@ -16,4 +16,8 @@ public class TsmSymbol extends TsmExpr {
         return value;
     }
 
+    @Override
+    public String write() {
+        return value;
+    }
 }

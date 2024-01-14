@@ -61,4 +61,22 @@ public class TsmVector extends TsmExpr {
 
         return sb.toString();
     }
+
+    @Override
+    public String write() {
+        if (values == null) return "#()";
+
+        StringBuilder sb = new StringBuilder("#(");
+        for (int i = 0; i < values.length; i++) {
+            if (i == values.length - 1)
+                sb.append(values[i].write());
+            else {
+                sb.append(values[i].write());
+                sb.append(" ");
+            }
+        }
+        sb.append(")");
+
+        return sb.toString();
+    }
 }

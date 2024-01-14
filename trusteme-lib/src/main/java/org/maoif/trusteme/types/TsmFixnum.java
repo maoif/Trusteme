@@ -15,4 +15,9 @@ public class TsmFixnum extends TsmExpr {
     public String toString() {
         return String.valueOf(value);
     }
+
+    @Override
+    public String write() {
+        return String.valueOf(value);
+    }
 }

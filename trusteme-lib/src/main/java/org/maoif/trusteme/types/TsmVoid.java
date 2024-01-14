@@ -9,4 +9,9 @@ public class TsmVoid extends TsmExpr {
     public String toString() {
         return "#<void>";
     }
+
+    @Override
+    public String write() {
+        return "#<void>";
+    }
 }

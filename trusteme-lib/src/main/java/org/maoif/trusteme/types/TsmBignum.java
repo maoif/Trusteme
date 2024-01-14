@@ -17,4 +17,9 @@ public class TsmBignum extends TsmExpr {
     public String toString() {
         return String.valueOf(value);
     }
+
+    @Override
+    public String write() {
+        return this.value.toString();
+    }
 }
