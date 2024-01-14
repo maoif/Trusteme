@@ -12,6 +12,12 @@ public class SourceBuffer {
         src = str.toCharArray();
     }
 
+    public SourceBuffer(char[] cs, int pos) {
+        this.source = String.valueOf(cs);
+        this.src = cs;
+        this.pos = pos;
+    }
+
     public boolean peek(String str) {
         if (pos + str.length() <= src.length) {
             return String.valueOf(src, pos, str.length()).equals(str);

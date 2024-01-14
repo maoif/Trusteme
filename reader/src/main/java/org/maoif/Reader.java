@@ -55,6 +55,13 @@ public class Reader {
         return null;
     }
 
+    public static Object[] readWithNextPosition(char[] cs, int pos) {
+        var src = new SourceBuffer(cs, pos);
+        var res = read(src);
+        var next = src.getPos();
+        return new Object[] {res, next};
+    }
+
     /**
      * Read all data from a file.
      * @param file input source file

@@ -224,7 +224,7 @@ public class Parser {
         return null;
     }
 
-    private TsmExpr parseQuoted(sExpr expr) {
+    public static TsmExpr parseQuoted(sExpr expr) {
         if (expr instanceof sBool e) {
             return e.get() ? TsmBool.TRUE : TsmBool.FALSE;
         } else if (expr instanceof sChar e) {
@@ -241,6 +241,8 @@ public class Parser {
             return new TsmSymbol(e.get());
         } else if (expr instanceof sNull) {
             return TsmNull.INSTANCE;
+        } else if (expr instanceof sEof) {
+            return TsmEof.INSTANCE;
         } else if (expr instanceof sPair e) {
             return new TsmPair(parseQuoted(e.car()), parseQuoted(e.cdr()));
         } else if (expr instanceof sVector e) {
