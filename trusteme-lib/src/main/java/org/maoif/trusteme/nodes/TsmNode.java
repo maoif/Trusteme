@@ -8,6 +8,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.NodeInterface;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+import org.maoif.trusteme.TrustemeContext;
 import org.maoif.trusteme.types.*;
 
 import java.math.BigInteger;
@@ -25,6 +26,10 @@ public abstract class TsmNode extends Node {
     public TsmNode setTail() {
         this.isInTail = true;
         return this;
+    }
+
+    protected TrustemeContext getContext() {
+        return TrustemeContext.get(this);
     }
 
     public abstract Object executeGeneric(VirtualFrame frame);
@@ -91,5 +96,13 @@ public abstract class TsmNode extends Node {
 
     public TsmVoid executeTsmVoid(VirtualFrame frame) throws UnexpectedResultException {
         return TsmTypesGen.expectTsmVoid(executeGeneric(frame));
+    }
+
+    public TsmEof executeTsmEof(VirtualFrame frame) throws UnexpectedResultException {
+        return TsmTypesGen.expectTsmEof(executeGeneric(frame));
+    }
+
+    public TsmPort executeTsmPort(VirtualFrame frame) throws UnexpectedResultException {
+        return TsmTypesGen.expectTsmPort(executeGeneric(frame));
     }
 }
