@@ -45,6 +45,21 @@ public class TsmRootNode extends RootNode {
         return this.bodyNodes[last].executeGeneric(frame);
     }
 
+    /**
+     * Create a callable Trusteme AST.
+     * This is used to make the builtins usable,
+     * and to create procedures (lambda expressions).
+     *
+     * @param language the Trusteme language object
+     * @param frameDescriptor the frameDescriptor
+     * @param lexicalSlot slot number for the lexical scope
+     * @param slot start slot number after the lexical slot
+     * @param slotNum number of slots
+     * @param dotArgSlot slot number for the dot argument
+     * @param params parameter names
+     * @param bodyNodes children of this root node
+     * @return A TsmRootNode object wrapping `bodyNodes` that can be called.
+     */
     public static TsmRootNode create(
             TruffleLanguage<?> language, FrameDescriptor frameDescriptor,
             int lexicalSlot, int slot, int slotNum, int dotArgSlot, TsmSymbol[] params, TsmNode[] bodyNodes) {
