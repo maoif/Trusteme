@@ -40,7 +40,7 @@ public class TsmAddBuiltinNode extends TsmBuiltinNode {
             return new TsmFixnum(0);
 
         var res = compute(1, 0, args);
-        System.out.println("TsmAddBuiltinNode.executeGeneric: " + res.toString());
+
         return res;
     }
 

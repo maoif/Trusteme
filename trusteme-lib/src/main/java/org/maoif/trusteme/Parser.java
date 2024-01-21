@@ -64,8 +64,6 @@ public class Parser {
     private TsmNode parseSpecialForm(sPair p) {
         sExpr head = p.car();
         int len = p.length();
-        System.out.println("parseSpecialForm");
-        System.out.printf("\t p: %s, len: %d, head: %s\n", p, len, head);
         if (len == 0) throw new ParseException("invalid form: %s", p);
 
         if (head instanceof sSymbol h) {
@@ -85,7 +83,6 @@ public class Parser {
             } else if (symbolEq(h, sSymbol.SYM_QUOTE)) {
                 if (len == 2) {
                     sExpr datum = list_ref(p, 1);
-                    System.out.println(datum);
                     if (datum != null)
                         return new TsmQuoteNode(parseQuoted(datum));
                 }
