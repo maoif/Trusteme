@@ -2,6 +2,7 @@ package org.maoif.trusteme.types;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class TsmPair extends TsmExpr {
     private TsmExpr car;
@@ -55,6 +56,23 @@ public class TsmPair extends TsmExpr {
         }
 
         return len;
+    }
+
+    public Optional<Integer> lengthOptional() {
+        if (this.car == TsmNull.INSTANCE) return Optional.of(0);
+
+        int len = 1;
+        TsmExpr next = cdr;
+        while (next != TsmNull.INSTANCE) {
+            if (next instanceof TsmPair p) {
+                len++;
+                next = p.cdr();
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        return Optional.of(len);
     }
 
     public boolean isImproper() {
