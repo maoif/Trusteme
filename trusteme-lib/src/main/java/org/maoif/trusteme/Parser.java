@@ -35,7 +35,7 @@ public class Parser {
         return parse(Reader.read(str));
     }
 
-    private TsmNode parse(sExpr expr) {
+    public TsmNode parse(sExpr expr) {
         if (expr instanceof sPair e) {
             TsmNode res = parseSpecialForm(e);
             if (res == null) return parseApplication(e);
@@ -138,7 +138,7 @@ public class Parser {
 
                     if (params != null && body != null && body instanceof sPair bs && bs.length() >= 1) {
                         int firstSlot = -1;
-                        int slotCount = 1;
+                        int slotCount = 0;
                         int dotArgSlot = -1;
                         TsmSymbol[] paramNames = null;
                         var builder = FrameDescriptor.newBuilder();
@@ -150,7 +150,7 @@ public class Parser {
 
                         if (params instanceof sSymbol s) {
                             // (lambda args body...)
-                            firstSlot = builder.addSlots(1, FrameSlotKind.Object);
+                            dotArgSlot = builder.addSlots(1, FrameSlotKind.Object);
                             paramNames = new TsmSymbol[1];
                             paramNames[0] = (TsmSymbol) parseQuoted(params);
                         } else if (params instanceof sPair pp) {
