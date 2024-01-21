@@ -19,21 +19,24 @@ public class LexicalException extends Exception {
 
     @Override
     public String getMessage() {
+        int start = getErrLineStart();
+        int end   = getErrLineEnd(start);
+        int pos   = end - start;
+        var errLine = String.valueOf(src.toCharArray(), start, pos);
+
         StringBuilder sb = new StringBuilder();
         sb.append(super.getMessage());
         sb.append("\n");
         sb.append(String.format("in position %d, line:\n\n", pos));
-        sb.append(getErrLine());
+        sb.append(errLine);
+        sb.append("\n");
+        sb.append(" ".repeat(pos - 1)).append("^");
+        sb.append("\n");
 
         return sb.toString();
     }
 
-    private String getErrLine() {
-        int linePos = getPosOfLine();
-        return String.valueOf(src.toCharArray(), linePos, pos - linePos);
-    }
-
-    private int getPosOfLine() {
+    private int getErrLineStart() {
         char[] cs = src.toCharArray();
         int lineStart = 0;
         for (int i = 0; i < cs.length; i++) {
@@ -43,4 +46,15 @@ public class LexicalException extends Exception {
 
         return lineStart;
     }
+
+    private int getErrLineEnd(int lineStart) {
+        var cs = src.toCharArray();
+        int lineEnd = lineStart;
+        for (int i = lineStart; i < cs.length; i++) {
+            lineEnd = i;
+        }
+        // + 1 for the current position
+        return lineEnd + 1;
+    }
+
 }
