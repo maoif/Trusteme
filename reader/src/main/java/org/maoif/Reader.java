@@ -67,14 +67,19 @@ public class Reader {
      * @param file input source file
      * @return a list of data read
      */
-    public static sExpr readAll(File file) {
-        // TODO read until sEof
+    public static List<sExpr> readAll(File file) {
         try {
             var src = new SourceBuffer(Files.readString(file.toPath()));
+            List<sExpr> res = new LinkedList<>();
+            sExpr e = read(src);
+            while (!(e instanceof sEof)) {
+                res.add(e);
+                e = read(src);
+            }
 
-            return null;
+            return res;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to read from " + file);
         }
     }
 
@@ -139,7 +144,7 @@ public class Reader {
                 return readNumber(src);
             } else if (src.peek("#x") || src.peek("#X")) {
                 return readNumber(src);
-            } else if (src.peek() == (char) -1) {
+            } else if (src.peek() == (char) -1 || src.peek("#!eof")) {
                 return new sEof(src.getSource(), src.getPos());
             } else {
                 throw new LexicalException(src.getSource(), src.getPos(),
@@ -395,12 +400,14 @@ public class Reader {
         while (true) {
             src.skipWhitespaces();
 
-            if (src.peek('.')) {
+            int oldPos = src.getPos();
+            char c = src.read();
+            // Peek a whitespace so "..." can be read correctly.
+            if (c == '.' && Character.isWhitespace(src.peek())) {
                 if (p.car() == sNull.INSTANCE)
-                    throw new LexicalException(src.getSource(), src.getPos(),
+                    throw new LexicalException(src.getSource(), oldPos,
                             "at least one item is required before the dot");
 
-                src.advance(1);
                 src.skipWhitespaces();
                 sExpr ee = read(src);
                 src.skipWhitespaces();
@@ -415,17 +422,18 @@ public class Reader {
                     throw new LexicalException(src.getSource(), src.getPos(),
                             "more than one datum after dot");
                 }
-            } else if (src.peek(rightCloser)) {
+            } else if (c == rightCloser) {
                 // TODO maybe return sNull?
-                result.setPosEnd(src.advance(1));
+                result.setPosEnd(oldPos);
                 break;
-            } else if (src.peek() == (char) -1) {
-                throw new LexicalException(src.getSource(), src.getPos(),
+            } else if (c == (char) -1) {
+                throw new LexicalException(src.getSource(), oldPos,
                         "incomplete list");
-            } else if (src.peek(rightCloser == ')' ? ']' : ')')) {
-                throw new LexicalException(src.getSource(), src.getPos(),
+            } else if (c == (rightCloser == ')' ? ']' : ')')) {
+                throw new LexicalException(src.getSource(), oldPos,
                         "bad right closer for list");
             } else {
+                src.unread();
                 sExpr e = read(src);
                 if (e instanceof sEof)
                     throw new LexicalException(src.getSource(), src.getPos(),
