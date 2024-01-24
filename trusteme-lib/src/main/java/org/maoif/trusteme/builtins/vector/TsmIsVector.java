@@ -4,6 +4,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
 import org.maoif.trusteme.builtins.TsmBuiltinNode;
+import org.maoif.trusteme.types.TsmBool;
 import org.maoif.trusteme.types.TsmVector;
 
 @NodeInfo(shortName = "vector?")
@@ -20,6 +21,6 @@ public class TsmIsVector extends TsmBuiltinNode {
         if (args.length != 2)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        return args[1] instanceof TsmVector;
+        return TsmBool.get(args[1] instanceof TsmVector);
     }
 }
