@@ -15,13 +15,21 @@ public class TsmLengthBuiltinNode extends TsmBuiltinNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
+        return executeTsmFixnum(frame);
+    }
+
+    @Override
+    public TsmFixnum executeTsmFixnum(VirtualFrame frame) {
         Object[] args = frame.getArguments();
         if (args.length == 0)
             throw new RuntimeException("Lexical scope is lost");
         if (args.length != 2)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        TsmPair list = (TsmPair) args[1];
-        return new TsmFixnum(list.length());
+        if (args[1] instanceof TsmPair p) {
+            return new TsmFixnum(p.length());
+        } else {
+            throw new RuntimeException("Not a list: " + args[1]);
+        }
     }
 }
