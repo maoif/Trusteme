@@ -105,4 +105,8 @@ public abstract class TsmNode extends Node {
     public TsmPort executeTsmPort(VirtualFrame frame) throws UnexpectedResultException {
         return TsmTypesGen.expectTsmPort(executeGeneric(frame));
     }
+
+    public TsmHashtable executeTsmHashtable(VirtualFrame frame) throws UnexpectedResultException {
+        return TsmTypesGen.expectTsmHashtable(executeGeneric(frame));
+    }
 }

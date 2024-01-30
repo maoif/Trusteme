@@ -9,6 +9,7 @@ import java.math.BigInteger;
 
 @TypeSystem({TsmBool.class, TsmChar.class, TsmFixnum.class, TsmFlonum.class, TsmBignum.class,
         TsmString.class, TsmSymbol.class, TsmProcedure.class, TsmPair.class, TsmVector.class,
+        TsmHashtable.class,
         TsmNull.class, TsmVoid.class, TsmEof.class,
         TsmPort.class})
 public abstract class TsmTypes {
