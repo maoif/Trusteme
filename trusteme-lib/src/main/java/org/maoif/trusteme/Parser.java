@@ -41,7 +41,7 @@ public class Parser {
             if (res == null) return parseApplication(e);
             else             return res;
         } else if (expr instanceof sSymbol sym) {
-            return new TsmSymbolNode(-1, new TsmSymbol(sym.get()));
+            return new TsmSymbolNode(-1, TsmSymbol.get(sym.get()));
         } else if (expr instanceof sBool e) {
             throw new ParseException("Bool literal must be quoted: %s", expr);
         } else if (expr instanceof sChar e) {
@@ -73,7 +73,7 @@ public class Parser {
                     sExpr val = list_ref(p, 2);
 
                     if (id != null && val != null && id instanceof sSymbol s) {
-                        TsmSymbol sym = new TsmSymbol(s.get());
+                        TsmSymbol sym = TsmSymbol.get(s.get());
                         return new TsmDefineNode(frameDescriptorBuilders.peek().addSlots(1, FrameSlotKind.Object),
                                 sym, parse(val));
                     }
@@ -121,7 +121,7 @@ public class Parser {
                     sExpr val = list_ref(p, 2);
 
                     if (id != null && val != null && id instanceof sSymbol s) {
-                        TsmSymbol sym = new TsmSymbol(s.get());
+                        TsmSymbol sym = TsmSymbol.get(s.get());
                         return new TsmSetNode(sym, parse(val));
                     }
                 }
@@ -246,8 +246,8 @@ public class Parser {
                                         sNames.add(lhs);
 
                                         var checkNode = new TsmAppNode(
-                                                new TsmSymbolNode(-1, new TsmSymbol("undefined-var")),
-                                                new TsmNode[]{ new TsmQuoteNode(new TsmSymbol(lhs.get())) });
+                                                new TsmSymbolNode(-1, TsmSymbol.get("undefined-var")),
+                                                new TsmNode[]{ new TsmQuoteNode(TsmSymbol.get(lhs.get())) });
 
                                         System.out.println("Check node:");
                                         System.out.printf("\t %s\n", checkNode);
@@ -257,7 +257,7 @@ public class Parser {
 
                                         // generate (set! v0 e0)
                                         var rhs = parse(e);
-                                        var initNode = new TsmSetNode(new TsmSymbol(lhs.get()), rhs);
+                                        var initNode = new TsmSetNode(TsmSymbol.get(lhs.get()), rhs);
 
                                         System.out.println("Init node:");
                                         System.out.printf("\t %s\n", e);
@@ -313,7 +313,7 @@ public class Parser {
         int firstSlot   = builder.addSlots(names.size(), FrameSlotKind.Object);
         TsmSymbol[] paramNames = new TsmSymbol[names.size()];
         for (int i = 0; i < names.size(); i++) {
-            paramNames[i] = new TsmSymbol(names.get(i).get());
+            paramNames[i] = TsmSymbol.get(names.get(i).get());
         }
 
         var root = TsmRootNode.create(null, builder.build(),
@@ -336,7 +336,7 @@ public class Parser {
         } else if (expr instanceof sBignum e) {
             return new TsmBignum(e.get());
         } else if (expr instanceof sSymbol e) {
-            return new TsmSymbol(e.get());
+            return TsmSymbol.get(e.get());
         } else if (expr instanceof sNull) {
             return TsmNull.INSTANCE;
         } else if (expr instanceof sEof) {
