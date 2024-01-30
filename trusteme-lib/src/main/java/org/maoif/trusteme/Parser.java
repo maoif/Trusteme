@@ -203,14 +203,97 @@ public class Parser {
 
                 throw new ParseException("Invalid lambda form: %s", p);
             } else if (symbolEq(h, sSymbol.SYM_LETREC)) {
-                // syntax seems to only produce letrecs of one binding,
-                // but we support none and multiple bindings anyway
                 if (len >= 3) {
+                    /*
+                     * (letrec ([v0 e0] [v1 e1] ...) body*) ->
+                     * ((lambda (x0 x1 ...)
+                     *   (begin
+                     *     ;; checkNodes
+                     *     ;; install error detection code in case v's are used in initializing the bindings
+                     *     (set! v0 (lambda () (undefined-var 'v0)))
+                     *     ...
+                     *     ;; initNodes
+                     *     (set! v0 e0)
+                     *     (set! v1 e1)
+                     *     body*))
+                     *
+                     * letrec uses a new lexical scope to store the recursive bindings,
+                     * to have a new scope, we generate a dummy lambda application.
+                     */
+
+                    List<TsmNode> checkNodes = new ArrayList<>();
+                    List<TsmNode> initNodes = new ArrayList<>();
+                    List<TsmNode> bodyNodes = new ArrayList<>();
+                    List<sSymbol> sNames = new ArrayList<>();
+
                     sExpr bs = p.cdr();
-                    if (bs instanceof sPair bindings) {
-//                        frameDescriptors.push(new FrameDescriptor());
-                        throw new UnsupportedOperationException();
-//                        frameDescriptors.pop();
+                    if (bs instanceof sPair bindingsAndBody) {
+                        if (car(bindingsAndBody) instanceof sPair bindings) {
+                            var builder = FrameDescriptor.newBuilder();
+                            frameDescriptorBuilders.push(builder);
+
+                            // disallow empty bindings
+                            if (bindings.length() > 0) {
+                                // process each binding
+                                sExpr bds = bindings;
+
+                                while (!(bds instanceof sNull)) {
+                                    sExpr binding = car(bds);
+                                    sExpr v = car(binding);
+                                    sExpr e = car(cdr(binding));
+
+                                    if (v instanceof sSymbol lhs) {
+                                        sNames.add(lhs);
+
+                                        var checkNode = new TsmAppNode(
+                                                new TsmSymbolNode(-1, new TsmSymbol("undefined-var")),
+                                                new TsmNode[]{ new TsmQuoteNode(new TsmSymbol(lhs.get())) });
+
+                                        System.out.println("Check node:");
+                                        System.out.printf("\t %s\n", checkNode);
+
+                                        checkNodes.add(buildLambdaNode(FrameDescriptor.newBuilder(),
+                                                new ArrayList<>(), new TsmNode[]{ checkNode }));
+
+                                        // generate (set! v0 e0)
+                                        var rhs = parse(e);
+                                        var initNode = new TsmSetNode(new TsmSymbol(lhs.get()), rhs);
+
+                                        System.out.println("Init node:");
+                                        System.out.printf("\t %s\n", e);
+
+                                        initNodes.add(initNode);
+                                    }
+
+                                    bds = cdr(bds);
+                                }
+
+                                // handle body
+                                if (cdr(bindingsAndBody) instanceof sPair body) {
+                                    sExpr expr = body;
+                                    while (!(expr instanceof sNull)) {
+                                        bodyNodes.add(parse(car(expr)));
+                                        expr = cdr(expr);
+                                    }
+                                }
+
+                                checkNodes.addAll(initNodes);
+                                checkNodes.addAll(bodyNodes);
+                                checkNodes.get(checkNodes.size() - 1).setTail();
+                                var dummyLambda =  buildLambdaNode(builder, sNames, checkNodes.toArray(new TsmNode[0]));
+
+                                System.out.println("letrec body:");
+                                checkNodes.forEach(x -> System.out.printf("\t %s\n", x));
+
+                                List<TsmQuoteNode> dummyArgs = sNames.stream()
+                                        .map(n -> new TsmQuoteNode(TsmBool.FALSE))
+                                        .toList();
+
+                                frameDescriptorBuilders.pop();
+
+                                return new TsmAppNode(dummyLambda, dummyArgs.toArray(new TsmNode[0]));
+                            }
+                        }
                     }
                 }
 
@@ -219,6 +302,24 @@ public class Parser {
         }
 
         return null;
+    }
+
+    private TsmLambdaNode buildLambdaNode(FrameDescriptor.Builder builder, List<sSymbol> names, TsmNode[] body) {
+        if (body.length == 0) {
+            throw new ParseException("Empty body not allowed");
+        }
+
+        int lexicalSlot = builder.addSlots(1, FrameSlotKind.Object);
+        int firstSlot   = builder.addSlots(names.size(), FrameSlotKind.Object);
+        TsmSymbol[] paramNames = new TsmSymbol[names.size()];
+        for (int i = 0; i < names.size(); i++) {
+            paramNames[i] = new TsmSymbol(names.get(i).get());
+        }
+
+        var root = TsmRootNode.create(null, builder.build(),
+                lexicalSlot, firstSlot, names.size(), -1, paramNames, body);
+
+        return new TsmLambdaNode(new TsmProcedure(root.getCallTarget()));
     }
 
     public static TsmExpr parseQuoted(sExpr expr) {
