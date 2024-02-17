@@ -7,6 +7,9 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.CallTarget;
+
+import org.maoif.trusteme.TailCallException;
 import org.maoif.trusteme.types.TsmSymbol;
 
 import java.util.Arrays;
@@ -22,6 +25,8 @@ import java.util.List;
 public class TsmRootNode extends RootNode {
     @Children
     private TsmNode[] bodyNodes;
+    @Child
+    public TsmAppDispatchNode dispatchNode = TsmAppDispatchNodeGen.create();
 
     public TsmRootNode(TruffleLanguage<?> language, TsmNode[] bodyNodes) {
         super(language);
@@ -38,11 +43,26 @@ public class TsmRootNode extends RootNode {
         int last = this.bodyNodes.length -1;
         CompilerAsserts.compilationConstant(last);
         for (int i = 0; i < last; i++) {
-            this.bodyNodes[i].executeGeneric(frame);
+            try {
+                this.bodyNodes[i].executeGeneric(frame);
+            } catch (TailCallException e) {
+                call(frame, e.callTarget, e.args);
+            }
         }
 
         // the value of the last expression is the return value
         return this.bodyNodes[last].executeGeneric(frame);
+    }
+
+    private Object call(VirtualFrame frame, CallTarget callTarget, Object[] args) {
+        while (true) {
+            try {
+                return this.dispatchNode.executeDispatch(frame, callTarget, args);
+            } catch (TailCallException e) {
+                callTarget = e.callTarget;
+                args = e.args;
+            }
+        }
     }
 
     /**

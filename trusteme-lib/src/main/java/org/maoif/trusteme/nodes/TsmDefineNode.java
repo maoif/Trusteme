@@ -4,6 +4,9 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.CallTarget;
+
+import org.maoif.trusteme.TailCallException;
 import org.maoif.trusteme.types.TsmExpr;
 import org.maoif.trusteme.types.TsmPair;
 import org.maoif.trusteme.types.TsmSymbol;
@@ -17,6 +20,8 @@ import java.util.concurrent.ConcurrentMap;
 public class TsmDefineNode extends TsmNode {
     @Child
     private TsmNode valueNode;
+    @Child
+    public TsmAppDispatchNode dispatchNode = TsmAppDispatchNodeGen.create();
 
     private final TsmSymbol sym;
     private final int slot;
@@ -44,7 +49,13 @@ public class TsmDefineNode extends TsmNode {
 
     @Override
     public TsmVoid executeGeneric(VirtualFrame virtualFrame) {
-        Object value = this.valueNode.executeGeneric(virtualFrame);
+        Object value;
+        try {
+            value = this.valueNode.executeGeneric(virtualFrame);
+        } catch (TailCallException e) {
+            value = call(virtualFrame, e.callTarget, e.args);
+        }
+
 //        virtualFrame.setObject(this.slot, new TsmPair(this.sym, (TsmExpr) value));
 
         // TODO cache the top frame
@@ -53,6 +64,17 @@ public class TsmDefineNode extends TsmNode {
         topEnv.put(sym.get(), (TsmExpr) value);
 
         return TsmVoid.INSTANCE;
+    }
+
+    private Object call(VirtualFrame frame, CallTarget callTarget, Object[] args) {
+        while (true) {
+            try {
+                return this.dispatchNode.executeDispatch(frame, callTarget, args);
+            } catch (TailCallException e) {
+                callTarget = e.callTarget;
+                args = e.args;
+            }
+        }
     }
 
     private static Frame getTopFrame(VirtualFrame virtualFrame) {

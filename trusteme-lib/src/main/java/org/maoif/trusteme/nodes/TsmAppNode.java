@@ -34,32 +34,45 @@ public class TsmAppNode extends TsmNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
+        TsmProcedure proc = null;
         try {
-            TsmProcedure proc = rator.executeTsmProcedure(frame);
-            Object[] args;
-
-            if (rands == null) {
-                // TODO how to reconcile lexical scope and TsmExp?
-                args = new Object[1];
-                args[0] = proc.getLexicalScope();
+            proc = rator.executeTsmProcedure(frame);
+        } catch (UnexpectedResultException e) {
+            throw new RuntimeException("Not a procedure: " + proc);
+        } catch (TailCallException e) {
+            var p = call(frame, e.callTarget, e.args);
+            if (p instanceof TsmProcedure pp) {
+                proc = pp;
             } else {
-                CompilerAsserts.compilationConstant(this.rands.length);
+                throw new RuntimeException("Not a procedure: " + p);
+            }
+        }
 
-                args = new Object[rands.length + 1];
-                args[0] = proc.getLexicalScope();
-                for (int i = 0; i < rands.length; i++) {
+        Object[] args;
+
+        if (rands == null) {
+            // TODO how to reconcile lexical scope and TsmExp?
+            args = new Object[1];
+            args[0] = proc.getLexicalScope();
+        } else {
+            CompilerAsserts.compilationConstant(this.rands.length);
+
+            args = new Object[rands.length + 1];
+            args[0] = proc.getLexicalScope();
+            for (int i = 0; i < rands.length; i++) {
+                try {
                     args[i + 1] = rands[i].executeGeneric(frame);
+                } catch (TailCallException e) {
+                    args[i + 1] = call(frame, e.callTarget, e.args);
                 }
             }
-
-            CompilerAsserts.compilationConstant(this.isInTail);
-            if (this.isInTail)
-                throw new TailCallException(proc.getCallTarget(), args);
-            else
-                return call(frame, proc.getCallTarget(), args);
-        } catch (UnexpectedResultException e) {
-            throw new RuntimeException(e);
         }
+
+        CompilerAsserts.compilationConstant(this.isInTail);
+        if (this.isInTail)
+            throw new TailCallException(proc.getCallTarget(), args);
+        else
+            return call(frame, proc.getCallTarget(), args);
     }
 
     private Object call(VirtualFrame frame, CallTarget callTarget, Object[] args) {

@@ -2,6 +2,9 @@ package org.maoif.trusteme.nodes;
 
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.CallTarget;
+
+import org.maoif.trusteme.TailCallException;
 import org.maoif.trusteme.types.TsmExpr;
 import org.maoif.trusteme.types.TsmPair;
 import org.maoif.trusteme.types.TsmSymbol;
@@ -18,6 +21,8 @@ import java.util.concurrent.ConcurrentMap;
 public class TsmSetNode extends TsmNode {
     @Child
     private TsmNode valueNode;
+    @Child
+    public TsmAppDispatchNode dispatchNode = TsmAppDispatchNodeGen.create();
 
     private TsmSymbol sym;
 //    private int slot;
@@ -35,7 +40,13 @@ public class TsmSetNode extends TsmNode {
 
     @Override
     public Object executeGeneric(VirtualFrame virtualFrame) {
-        Object value = this.valueNode.executeGeneric(virtualFrame);
+        Object value;
+        try {
+            value = this.valueNode.executeGeneric(virtualFrame);
+        } catch (TailCallException e) {
+            value = call(virtualFrame, e.callTarget, e.args);
+        }
+
         Frame lexicalScope = virtualFrame;
         while (true) {
             int num = lexicalScope.getFrameDescriptor().getNumberOfSlots();
@@ -62,6 +73,17 @@ public class TsmSetNode extends TsmNode {
                 }
             } else {
                 lexicalScope = (Frame) prevFrame;
+            }
+        }
+    }
+
+    private Object call(VirtualFrame frame, CallTarget callTarget, Object[] args) {
+        while (true) {
+            try {
+                return this.dispatchNode.executeDispatch(frame, callTarget, args);
+            } catch (TailCallException e) {
+                callTarget = e.callTarget;
+                args = e.args;
             }
         }
     }
