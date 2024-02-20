@@ -249,9 +249,6 @@ public class Parser {
                                                 new TsmSymbolNode(-1, TsmSymbol.get("undefined-var")),
                                                 new TsmNode[]{ new TsmQuoteNode(TsmSymbol.get(lhs.get())) });
 
-                                        System.out.println("Check node:");
-                                        System.out.printf("\t %s\n", checkNode);
-
                                         var checkNode = new TsmSetNode(TsmSymbol.get(lhs.get()),
                                                 buildLambdaNode(FrameDescriptor.newBuilder(),
                                                         new ArrayList<>(), new TsmNode[]{ errorNode }));
@@ -260,9 +257,6 @@ public class Parser {
                                         // generate (set! v0 e0)
                                         var rhs = parse(e);
                                         var initNode = new TsmSetNode(TsmSymbol.get(lhs.get()), rhs);
-
-                                        System.out.println("Init node:");
-                                        System.out.printf("\t %s\n", e);
 
                                         initNodes.add(initNode);
                                     }
@@ -283,9 +277,6 @@ public class Parser {
                                 checkNodes.addAll(bodyNodes);
                                 checkNodes.get(checkNodes.size() - 1).setTail();
                                 var dummyLambda =  buildLambdaNode(builder, sNames, checkNodes.toArray(new TsmNode[0]));
-
-                                System.out.println("letrec body:");
-                                checkNodes.forEach(x -> System.out.printf("\t %s\n", x));
 
                                 List<TsmQuoteNode> dummyArgs = sNames.stream()
                                         .map(n -> new TsmQuoteNode(TsmBool.FALSE))
