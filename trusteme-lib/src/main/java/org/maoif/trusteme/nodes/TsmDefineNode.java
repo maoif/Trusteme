@@ -32,21 +32,6 @@ public class TsmDefineNode extends TsmNode {
         this.valueNode = valueNode;
     }
 
-//    public int getSlot() {
-//        return this.slot;
-//    }
-
-//    protected TsmExpr write(VirtualFrame virtualFrame, Object value) {
-//        int slot = this.getSlot();
-//        if (virtualFrame.getFrameDescriptor().getSlotKind(slot) != FrameSlotKind.Object) {
-//            CompilerDirectives.transferToInterpreterAndInvalidate();
-//            virtualFrame.getFrameDescriptor().setSlotKind(slot, FrameSlotKind.Object);
-//        }
-//        virtualFrame.setObject(slot, value);
-//
-//        return TsmVoid.INSTANCE;
-//    }
-
     @Override
     public TsmVoid executeGeneric(VirtualFrame virtualFrame) {
         Object value;
@@ -55,8 +40,6 @@ public class TsmDefineNode extends TsmNode {
         } catch (TailCallException e) {
             value = call(virtualFrame, e.callTarget, e.args);
         }
-
-//        virtualFrame.setObject(this.slot, new TsmPair(this.sym, (TsmExpr) value));
 
         // TODO cache the top frame
         Frame topFrame = getTopFrame(virtualFrame);

@@ -42,10 +42,6 @@ public class TsmSymbolNode extends TsmNode {
                 if (o instanceof TsmPair p && p.car() instanceof TsmSymbol s) {
                     if (s.get().equals(sym.get())) return p.cdr();
                 }
-//                else {
-//                    System.out.println(o);
-//                    throw new RuntimeException("Bad frame object type");
-//                }
             }
 
             Object prevFrame = lexicalScope.getObject(0);
@@ -53,17 +49,15 @@ public class TsmSymbolNode extends TsmNode {
                 // we are at top frame
                 var topEnv = (ConcurrentMap<String, TsmExpr>) lexicalScope.getObject(1);
                 TsmExpr v = topEnv.get(sym.get());
-                if (v == null) throw new RuntimeException("Unbound identifier: " + sym.get());
-                else           return v;
+                if (v == null) {
+                    throw new RuntimeException("Unbound identifier: " + sym.get());
+                } else {
+                    return v;
+                }
             } else {
                 lexicalScope = (Frame) prevFrame;
             }
         }
-    }
-
-    private Frame getLexicalScope(Frame frame) {
-        // the 1st arg always stores the environment (materialized frame)
-        return (Frame) frame.getArguments()[0];
     }
 
     @Override

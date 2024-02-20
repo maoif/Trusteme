@@ -25,18 +25,11 @@ public class TsmSetNode extends TsmNode {
     public TsmAppDispatchNode dispatchNode = TsmAppDispatchNodeGen.create();
 
     private TsmSymbol sym;
-//    private int slot;
 
     public TsmSetNode(TsmSymbol sym, TsmNode valueNode) {
-//        // TODO sym useful?
-//        this.slot = slot;
         this.sym = sym;
         this.valueNode = valueNode;
     }
-
-//    public int getSlot() {
-//        return this.slot;
-//    }
 
     @Override
     public Object executeGeneric(VirtualFrame virtualFrame) {
@@ -58,7 +51,6 @@ public class TsmSetNode extends TsmNode {
                         return TsmVoid.INSTANCE;
                     }
                 }
-//                else throw new RuntimeException("Bad frame object type");
             }
 
             Object prevFrame = lexicalScope.getObject(0);
@@ -66,8 +58,9 @@ public class TsmSetNode extends TsmNode {
                 // we are at top frame
                 var topEnv = (ConcurrentMap<String, TsmExpr>) lexicalScope.getObject(1);
                 TsmExpr v = topEnv.get(sym.get());
-                if (v == null) throw new RuntimeException("Unbound identifier: " + sym.get());
-                else {
+                if (v == null) {
+                    throw new RuntimeException("Unbound identifier: " + sym.get());
+                } else {
                     topEnv.put(sym.get(), (TsmExpr) value);
                     return TsmVoid.INSTANCE;
                 }
