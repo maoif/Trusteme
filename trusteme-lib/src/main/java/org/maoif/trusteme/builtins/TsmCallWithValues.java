@@ -1,5 +1,6 @@
 package org.maoif.trusteme.builtins;
 
+import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
@@ -13,6 +14,8 @@ import org.maoif.trusteme.types.TsmVector;
 
 @NodeInfo(shortName = "call-with-values")
 public class TsmCallWithValues extends TsmBuiltinNode {
+    @Child
+    private TsmAppDispatchNode dispatchNode = TsmAppDispatchNodeGen.create();;
     @Child
     private TsmAppDispatchNode dispatchNode1;
     @Child
@@ -48,22 +51,18 @@ public class TsmCallWithValues extends TsmBuiltinNode {
                 Object[] pArgs = new Object[1];
                 pArgs[0] = producer.getLexicalScope();
 
-                try {
-                    dispatchNode1.executeDispatch(frame, producer.getCallTarget(), pArgs);
-                } catch (TailCallException tailCallException) {
-                    Object ret = dispatchNode2.executeDispatch(
-                            frame, tailCallException.callTarget, tailCallException.args);
+                Object ret = call(frame, producer.getCallTarget(), pArgs);
 
-                    // As shown in ValuesNode, multiple return values are stored in a TsmVector.
-                    if (ret instanceof TsmVector cArgs) {
-                        Object[] newCArgs = new Object[1 + cArgs.length()];
-                        System.arraycopy(cArgs.rawArray(), 0, newCArgs, 1, cArgs.length());
-                        newCArgs[0] = consumer.getLexicalScope();
+                // As shown in ValuesNode, multiple return values are stored in a TsmVector.
+                // TODO maybe use a separate representation
+                if (ret instanceof TsmVector cArgs) {
+                    Object[] newCArgs = new Object[1 + cArgs.length()];
+                    System.arraycopy(cArgs.rawArray(), 0, newCArgs, 1, cArgs.length());
+                    newCArgs[0] = consumer.getLexicalScope();
 
-                        return dispatchNode3.executeDispatch(frame, consumer.getCallTarget(), newCArgs);
-                    } else {
-                        throw new RuntimeException("bad multiple return value format: " + ret);
-                    }
+                    return call(frame, consumer.getCallTarget(), newCArgs);
+                } else {
+                    throw new RuntimeException("bad multiple return value format: " + ret);
                 }
             } else {
                 throw new RuntimeException(p2 + " is not a procedure");
@@ -71,8 +70,17 @@ public class TsmCallWithValues extends TsmBuiltinNode {
         } else {
             throw new RuntimeException(p1 + " is not a procedure");
         }
+    }
 
-        throw CompilerDirectives.shouldNotReachHere();
+    private Object call(VirtualFrame frame, CallTarget callTarget, Object[] args) {
+        while (true) {
+            try {
+                return this.dispatchNode.executeDispatch(frame, callTarget, args);
+            } catch (TailCallException e) {
+                callTarget = e.callTarget;
+                args = e.args;
+            }
+        }
     }
 
 }
