@@ -197,7 +197,7 @@ public class Parser {
 
                         frameDescriptorBuilders.pop();
 
-                        return new TsmLambdaNode(new TsmProcedure(root.getCallTarget()));
+                        return new TsmLambdaNode(root.getCallTarget());
                     }
                 }
 
@@ -314,7 +314,7 @@ public class Parser {
         var root = TsmRootNode.create(null, builder.build(),
                 lexicalSlot, firstSlot, names.size(), -1, paramNames, body);
 
-        return new TsmLambdaNode(new TsmProcedure(root.getCallTarget()));
+        return new TsmLambdaNode(root.getCallTarget());
     }
 
     public static TsmExpr parseQuoted(sExpr expr) {

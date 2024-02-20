@@ -1,8 +1,8 @@
 package org.maoif.trusteme.nodes;
 
-import com.oracle.truffle.api.dsl.NodeField;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import org.maoif.trusteme.nodes.TsmNode;
+
 import org.maoif.trusteme.types.TsmProcedure;
 
 /**
@@ -11,23 +11,23 @@ import org.maoif.trusteme.types.TsmProcedure;
  */
 //@NodeField(name = "procedure", type = TsmProcedure.class)
 public class TsmLambdaNode extends TsmNode {
-    private TsmProcedure proc;
+    private RootCallTarget callTarget;
 
-    public TsmLambdaNode(TsmProcedure proc) {
-        this.proc = proc;
+    public TsmLambdaNode(RootCallTarget callTarget) {
+        this.callTarget = callTarget;
     }
 
     @Override
     public TsmProcedure executeTsmProcedure(VirtualFrame frame) {
-        // create closure
-        proc.setLexicalScope(frame.materialize());
-        return this.proc;
+        return (TsmProcedure) executeGeneric(frame);
     }
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
+        // create closure
+        var proc = new TsmProcedure(this.callTarget);
         proc.setLexicalScope(frame.materialize());
-        return this.proc;
+        return proc;
     }
 
     @Override
