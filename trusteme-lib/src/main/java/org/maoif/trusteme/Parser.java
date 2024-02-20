@@ -259,6 +259,8 @@ public class Parser {
                                         var initNode = new TsmSetNode(TsmSymbol.get(lhs.get()), rhs);
 
                                         initNodes.add(initNode);
+                                    } else {
+                                        throw new ParseException("Invalid identifier: %s", v);
                                     }
 
                                     bds = cdr(bds);
