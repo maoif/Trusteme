@@ -25,4 +25,9 @@ public class TsmReadLexicalScopeNode extends TsmReadArgNode {
 
         return TsmVoid.INSTANCE;
     }
+
+    @Override
+    public String toString() {
+        return "TsmReadLexicalScopeNode";
+    }
 }

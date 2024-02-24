@@ -42,4 +42,9 @@ public class TsmReadArgNode extends TsmNode {
 
         return TsmVoid.INSTANCE;
     }
+
+    @Override
+    public String toString() {
+        return String.format("(TsmReadArgNode %s %d)", sym, argSlot);
+    }
 }
