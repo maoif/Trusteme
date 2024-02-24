@@ -21,4 +21,22 @@ public class TsmChar extends TsmExpr {
         return "#\\" + this.value;
     }
 
+    @Override
+    public boolean isEq(TsmExpr other) {
+        return isEqual(other);
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEqual(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        if (other instanceof TsmChar n) {
+            return n.value == this.value;
+        } else {
+            return false;
+        }
+    }
 }

@@ -14,4 +14,19 @@ public class TsmVoid extends TsmExpr {
     public String write() {
         return "#<void>";
     }
+
+    @Override
+    public boolean isEq(TsmExpr other) {
+        return this == INSTANCE;
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEq(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        return isEq(other);
+    }
 }

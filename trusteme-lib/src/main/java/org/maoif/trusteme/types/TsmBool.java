@@ -35,4 +35,23 @@ public class TsmBool extends TsmExpr {
     public String write() {
         return toString();
     }
+
+    @Override
+    public boolean isEq(TsmExpr other) {
+        return isEqual(other);
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEqual(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        if (other instanceof TsmBool n) {
+            return this == n;
+        } else {
+            return false;
+        }
+    }
 }

@@ -22,4 +22,23 @@ public class TsmBignum extends TsmExpr {
     public String write() {
         return this.value.toString();
     }
+
+    @Override
+    public boolean isEq(TsmExpr other) {
+        return isEqual(other);
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEqual(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        if (other instanceof TsmBignum n) {
+            return n.get().equals(this.value);
+        } else {
+            return false;
+        }
+    }
 }

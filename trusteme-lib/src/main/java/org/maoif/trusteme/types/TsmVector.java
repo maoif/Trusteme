@@ -79,4 +79,40 @@ public class TsmVector extends TsmExpr {
 
         return sb.toString();
     }
+
+    @Override
+    public boolean isEq(TsmExpr other) {
+        if (other instanceof TsmVector vec) {
+            if (this.values.length == 0 && vec.values.length == 0) {
+                return true;
+            } else {
+                return this == other;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEq(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        // TODO handle cycles
+        if (other instanceof TsmVector vec) {
+            if (vec.length() == this.length()) {
+                for (int i = 0; i < this.length(); i++) {
+                    if (!this.values[i].isEqual(vec.values[i])) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

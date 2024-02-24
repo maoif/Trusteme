@@ -58,6 +58,27 @@ public class TsmPair extends TsmExpr {
         return len;
     }
 
+    /**
+     * Compute the length of the improper list up to the dot.
+     * @return the improper length
+     */
+    public int improperLength() {
+        if (this.car == TsmNull.INSTANCE) return 0;
+
+        int len = 1;
+        TsmExpr next = cdr;
+        while (next != TsmNull.INSTANCE) {
+            if (next instanceof TsmPair p) {
+                len++;
+                next = p.cdr();
+            } else {
+               break;
+            }
+        }
+
+        return len;
+    }
+
     public Optional<Integer> lengthOptional() {
         if (this.car == TsmNull.INSTANCE) return Optional.of(0);
 
@@ -177,5 +198,72 @@ public class TsmPair extends TsmExpr {
         }
 
         return "(" + String.join(" ", strs) + ")";
+    }
+
+    @Override
+    public boolean isEq(TsmExpr other) {
+        if (other instanceof TsmPair p) {
+            if (p.car == TsmNull.INSTANCE) {
+                return this.car == TsmNull.INSTANCE;
+            } else {
+                return this == other;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEq(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        // TODO handle cycles
+        if (other instanceof TsmPair p) {
+            if (p.car == TsmNull.INSTANCE) {
+                return this.car == TsmNull.INSTANCE;
+            }
+
+            if (!p.car.isEqual(this.car)) {
+                return false;
+            }
+
+            var proper1 = this.isImproper();
+            var proper2 = p.isImproper();
+            if (proper1 != proper2) {
+                return false;
+            }
+
+            if (!proper1) {
+                if (this.length() != p.length()) {
+                    return false;
+                }
+            } else {
+                if (this.improperLength() != p.improperLength()) {
+                    return false;
+                }
+            }
+
+            TsmExpr next1 = this.cdr;
+            TsmExpr next2 = p.cdr;
+            while (next1 != TsmNull.INSTANCE) {
+                if (next1 instanceof TsmPair p1 && next2 instanceof TsmPair p2) {
+                    if (!p1.car.isEqual(p2.car)) {
+                        return false;
+                    }
+
+                    next1 = p1.cdr();
+                    next2 = p2.cdr();
+                } else {
+                    return next1.isEqual(next2);
+                }
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

@@ -46,4 +46,19 @@ public abstract class TsmPort extends TsmExpr {
     public String write() {
         return "#<port>";
     }
+
+    @Override
+    public boolean isEq(TsmExpr other) {
+        return this == other;
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEq(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        return isEq(other);
+    }
 }

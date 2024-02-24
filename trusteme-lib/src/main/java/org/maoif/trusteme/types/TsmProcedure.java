@@ -38,4 +38,19 @@ public class TsmProcedure extends TsmExpr {
     public String write() {
         return "#<procedure>";
     }
+
+    @Override
+    public boolean isEq(TsmExpr other) {
+        return this == other;
+    }
+
+    @Override
+    public boolean isEqv(TsmExpr other) {
+        return isEq(other);
+    }
+
+    @Override
+    public boolean isEqual(TsmExpr other) {
+        return isEq(other);
+    }
 }
