@@ -40,7 +40,9 @@ public class TsmSymbolNode extends TsmNode {
             for (int i = 1; i < num; i++) {
                 Object o = lexicalScope.getObject(i);
                 if (o instanceof TsmPair p && p.car() instanceof TsmSymbol s) {
-                    if (s.get().equals(sym.get())) return p.cdr();
+                    if (s.get().equals(sym.get())) {
+                        return p.cdr();
+                    }
                 }
             }
 
