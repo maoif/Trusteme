@@ -1,6 +1,7 @@
-package org.maoif.trusteme.builtins;
+package org.maoif.trusteme.builtins.io;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import org.maoif.trusteme.builtins.TsmBuiltinNode;
 
 public class TsmPrintfBuiltinNode extends TsmBuiltinNode {
     protected TsmPrintfBuiltinNode() {
