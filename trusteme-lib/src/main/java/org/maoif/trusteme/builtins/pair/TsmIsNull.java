@@ -28,12 +28,6 @@ public class TsmIsNull extends TsmBuiltinNode {
         if (args.length != 2)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        if (args[1] instanceof TsmPair p) {
-            if (p.car() == TsmNull.INSTANCE) {
-                return TsmBool.TRUE;
-            }
-        }
-
-        return TsmBool.FALSE;
+        return TsmBool.get(args[1] == TsmNull.INSTANCE);
     }
 }

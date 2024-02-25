@@ -337,6 +337,10 @@ public class Parser {
         } else if (expr instanceof sEof) {
             return TsmEof.INSTANCE;
         } else if (expr instanceof sPair e) {
+            if (e.car() == sNull.INSTANCE) {
+                return TsmNull.INSTANCE;
+            }
+
             return new TsmPair(parseQuoted(e.car()), parseQuoted(e.cdr()));
         } else if (expr instanceof sVector e) {
             var vals = e.get();

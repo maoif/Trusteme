@@ -20,7 +20,7 @@ public class TsmCdrBuiltinNode extends TsmBuiltinNode {
         if (args.length != 2)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        if (args[1] instanceof TsmPair p && p.car() != TsmNull.INSTANCE) {
+        if (args[1] instanceof TsmPair p) {
             return p.cdr();
         } else throw new RuntimeException("Not a pair: " + args[1]);
     }

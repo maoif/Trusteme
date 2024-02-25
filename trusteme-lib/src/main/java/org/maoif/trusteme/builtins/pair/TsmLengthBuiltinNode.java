@@ -5,6 +5,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 
 import org.maoif.trusteme.builtins.TsmBuiltinNode;
 import org.maoif.trusteme.types.TsmFixnum;
+import org.maoif.trusteme.types.TsmNull;
 import org.maoif.trusteme.types.TsmPair;
 
 @NodeInfo(shortName = "length")
@@ -25,6 +26,10 @@ public class TsmLengthBuiltinNode extends TsmBuiltinNode {
             throw new RuntimeException("Lexical scope is lost");
         if (args.length != 2)
             throw new RuntimeException("invalid argument count in " + this.NAME);
+
+        if (args[1] == TsmNull.INSTANCE) {
+            return new TsmFixnum(0);
+        }
 
         if (args[1] instanceof TsmPair p) {
             return new TsmFixnum(p.length());

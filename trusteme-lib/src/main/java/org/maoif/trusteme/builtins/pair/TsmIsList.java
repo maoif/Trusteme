@@ -5,6 +5,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 
 import org.maoif.trusteme.builtins.TsmBuiltinNode;
 import org.maoif.trusteme.types.TsmBool;
+import org.maoif.trusteme.types.TsmNull;
 import org.maoif.trusteme.types.TsmPair;
 
 @NodeInfo(shortName = "list?")
@@ -25,6 +26,10 @@ public class TsmIsList extends TsmBuiltinNode  {
             throw new RuntimeException("Lexical scope is lost");
         if (args.length != 2)
             throw new RuntimeException("invalid argument count in " + this.NAME);
+
+        if (args[1] == TsmNull.INSTANCE) {
+            return TsmBool.TRUE;
+        }
 
         return TsmBool.get(args[1] instanceof TsmPair p &&
                 p.lengthOptional().isPresent());

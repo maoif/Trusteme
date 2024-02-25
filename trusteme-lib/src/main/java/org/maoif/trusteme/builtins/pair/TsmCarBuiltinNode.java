@@ -22,8 +22,10 @@ public class TsmCarBuiltinNode extends TsmBuiltinNode {
         if (args.length != 2)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        if (args[1] instanceof TsmPair p && p.car() != TsmNull.INSTANCE) {
+        if (args[1] instanceof TsmPair p) {
             return p.car();
-        } else throw new RuntimeException("Not a pair: " + args[1]);
+        } else {
+            throw new RuntimeException("Not a pair: " + args[1]);
+        }
     }
 }

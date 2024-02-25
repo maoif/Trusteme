@@ -6,6 +6,11 @@ public class TsmNull extends TsmExpr {
     private TsmNull() { }
 
     @Override
+    public String toString() {
+        return "()";
+    }
+
+    @Override
     public String write() {
         return "()";
     }

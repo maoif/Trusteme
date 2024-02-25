@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import org.maoif.trusteme.builtins.TsmBuiltinNode;
 import org.maoif.trusteme.types.TsmExpr;
+import org.maoif.trusteme.types.TsmNull;
 import org.maoif.trusteme.types.TsmPair;
 
 @NodeInfo(shortName = "list")
@@ -16,19 +17,13 @@ public class TsmListBuiltinNode extends TsmBuiltinNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        return executeTsmPair(frame);
-    }
-
-    @Override
-    public TsmPair executeTsmPair(VirtualFrame frame) {
         Object[] args = frame.getArguments();
         if (args.length == 0)
             throw new RuntimeException("Lexical scope is lost");
         if (args.length == 1)
-            return new TsmPair();
+            return TsmNull.INSTANCE;
 
-        TsmPair res = new TsmPair();
-        res.setCar((TsmExpr) args[1]);
+        TsmPair res = new TsmPair((TsmExpr) args[1]);
 
         TsmPair cdr = res;
         for (int i = 2; i < args.length; i++) {
@@ -39,4 +34,5 @@ public class TsmListBuiltinNode extends TsmBuiltinNode {
 
         return res;
     }
+
 }

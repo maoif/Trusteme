@@ -40,8 +40,6 @@ public class TsmPair extends TsmExpr {
     }
 
     public int length() {
-        if (this.car == TsmNull.INSTANCE) return 0;
-
         int len = 1;
         TsmExpr next = cdr;
         while (next != TsmNull.INSTANCE) {
@@ -63,8 +61,6 @@ public class TsmPair extends TsmExpr {
      * @return the improper length
      */
     public int improperLength() {
-        if (this.car == TsmNull.INSTANCE) return 0;
-
         int len = 1;
         TsmExpr next = cdr;
         while (next != TsmNull.INSTANCE) {
@@ -80,8 +76,6 @@ public class TsmPair extends TsmExpr {
     }
 
     public Optional<Integer> lengthOptional() {
-        if (this.car == TsmNull.INSTANCE) return Optional.of(0);
-
         int len = 1;
         TsmExpr next = cdr;
         while (next != TsmNull.INSTANCE) {
@@ -97,8 +91,6 @@ public class TsmPair extends TsmExpr {
     }
 
     public boolean isImproper() {
-        if (this.car == TsmNull.INSTANCE) return false;
-
         TsmExpr next = cdr;
         while (next != TsmNull.INSTANCE) {
             if (next instanceof TsmPair p) {
@@ -114,8 +106,6 @@ public class TsmPair extends TsmExpr {
     public TsmExpr ref(int i) {
         if (i < 0)
             throw new RuntimeException("index " + i + " is not an exact nonnegative integer");
-        if (this.car == TsmNull.INSTANCE)
-            throw new RuntimeException("pair is null");
 
         TsmExpr res = this.car;
         TsmExpr next = this.cdr;
@@ -134,8 +124,6 @@ public class TsmPair extends TsmExpr {
     }
 
     public TsmVector toVector() {
-        if (this.car == TsmNull.INSTANCE) return new TsmVector(0);
-
         if (isImproper())
             throw new RuntimeException(this + "is not a proper list");
 
@@ -158,8 +146,6 @@ public class TsmPair extends TsmExpr {
 
     @Override
     public String toString() {
-        if (car == TsmNull.INSTANCE)  return "()";
-
         List<String> strs = new LinkedList<>();
         TsmExpr obj = this;
         while (true) {
@@ -180,8 +166,6 @@ public class TsmPair extends TsmExpr {
 
     @Override
     public String write() {
-        if (car == TsmNull.INSTANCE)  return "()";
-
         List<String> strs = new LinkedList<>();
         TsmExpr obj = this;
         while (true) {
@@ -222,10 +206,6 @@ public class TsmPair extends TsmExpr {
     public boolean isEqual(TsmExpr other) {
         // TODO handle cycles
         if (other instanceof TsmPair p) {
-            if (p.car == TsmNull.INSTANCE) {
-                return this.car == TsmNull.INSTANCE;
-            }
-
             if (!p.car.isEqual(this.car)) {
                 return false;
             }

@@ -20,11 +20,6 @@ public class TsmConsBuiltinNode extends TsmBuiltinNode {
         if (args.length != 3)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        var cdr = (TsmExpr) args[2];
-        if (cdr instanceof TsmPair p && p.car() == TsmNull.INSTANCE) {
-            cdr = TsmNull.INSTANCE;
-        }
-
-        return new TsmPair((TsmExpr) args[1], cdr);
+        return new TsmPair((TsmExpr) args[1], (TsmExpr) args[2]);
     }
 }

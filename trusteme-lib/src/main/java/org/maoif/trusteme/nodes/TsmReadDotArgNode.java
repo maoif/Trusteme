@@ -29,22 +29,31 @@ public class TsmReadDotArgNode extends TsmReadArgNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         var args = frame.getArguments();
-        TsmPair res = new TsmPair();
-        TsmPair next = res;
+        // Lexical scope only.
+        if (args.length == 1) {
+            frame.getFrameDescriptor().setSlotKind(this.argSlot, FrameSlotKind.Object);
+            frame.setObject(this.argSlot, new TsmPair(this.sym, TsmNull.INSTANCE));
+
+            return TsmNull.INSTANCE;
+        }
 
         int i = this.argIndex;
+        TsmPair res = new TsmPair((TsmExpr) args[i++]);
+        TsmPair next = res;
+
         while (i < args.length) {
-            if (next.car() == TsmNull.INSTANCE)
-                next.setCar((TsmExpr) args[i++]);
-            else {
-                next.setCdr(new TsmPair((TsmExpr) args[i++]));
-                next = (TsmPair) next.cdr();
-            }
+            next.setCdr(new TsmPair((TsmExpr) args[i++]));
+            next = (TsmPair) next.cdr();
         }
 
         frame.getFrameDescriptor().setSlotKind(this.argSlot, FrameSlotKind.Object);
         frame.setObject(this.argSlot, new TsmPair(this.sym, res));
 
         return TsmVoid.INSTANCE;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(TsmReadDotArgNode %s %d)", sym, argSlot);
     }
 }
