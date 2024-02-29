@@ -108,7 +108,6 @@ public class TrustemeLanguage extends TruffleLanguage<TrustemeContext> {
             new TsmSetCar(), new TsmSetCdr(),
             new TsmListBuiltinNode(), new TsmIsList(), new TsmIsPair(), new TsmIsNull(),
             new TsmLengthBuiltinNode(), new TsmListRef(), new TsmList2Vector(),
-            new TsmExists(), new TsmForAll(), new TsmForEach(), new TsmMap(),
 
             new TsmIsBool(), new TsmNot(),
 
