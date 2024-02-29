@@ -29,8 +29,9 @@ public class TsmReadDotArgNode extends TsmReadArgNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         var args = frame.getArguments();
-        // Lexical scope only.
-        if (args.length == 1) {
+        // ((lambda x e ...)) or ((lambda (a . x) e ...) a1),
+        // where x should be '()
+        if (args.length == 1 || this.argIndex == args.length) {
             frame.getFrameDescriptor().setSlotKind(this.argSlot, FrameSlotKind.Object);
             frame.setObject(this.argSlot, new TsmPair(this.sym, TsmNull.INSTANCE));
 

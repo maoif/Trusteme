@@ -9,6 +9,7 @@ import org.maoif.trusteme.TailCallException;
 import org.maoif.trusteme.nodes.TsmAppDispatchNode;
 import org.maoif.trusteme.nodes.TsmAppDispatchNodeGen;
 import org.maoif.trusteme.types.TsmExpr;
+import org.maoif.trusteme.types.TsmNull;
 import org.maoif.trusteme.types.TsmPair;
 import org.maoif.trusteme.types.TsmProcedure;
 
@@ -32,20 +33,28 @@ public class TsmApplyBuiltinNode extends TsmBuiltinNode {
 
         if (args[1] instanceof TsmProcedure proc) {
             Object rest = args[args.length - 1];
+            Object[] procArgs;
+
             if (rest instanceof TsmPair p) {
                 if (p.isImproper()) {
                     throw new RuntimeException("Not a proper list: " + rest);
                 }
 
-                Object[] procArgs = new Object[1 + args.length - 3 + p.length()];
+                procArgs = new Object[1 + args.length - 3 + p.length()];
                 TsmExpr[] restArgs = p.rawArray();
                 procArgs[0] = proc.getLexicalScope();
                 System.arraycopy(args, 2, procArgs, 1, args.length - 3);
                 System.arraycopy(restArgs, 0, procArgs, 1 + args.length - 3, restArgs.length);
 
                 return call(frame, proc.getCallTarget(), procArgs);
+            } else if (rest == TsmNull.INSTANCE) {
+                procArgs = new Object[1 + args.length - 3];
+                procArgs[0] = proc.getLexicalScope();
+                System.arraycopy(args, 2, procArgs, 1, args.length - 3);
+
+                return call(frame, proc.getCallTarget(), procArgs);
             } else {
-                throw new RuntimeException("Not a pair: " + rest);
+                throw new RuntimeException("Not a list: " + rest);
             }
         } else {
             throw new RuntimeException("Expected a procedure, but got " + args[1]);
