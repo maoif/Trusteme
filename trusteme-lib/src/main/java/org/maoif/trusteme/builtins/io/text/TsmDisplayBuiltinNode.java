@@ -2,20 +2,17 @@ package org.maoif.trusteme.builtins.io.text;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
-
 import org.maoif.trusteme.builtins.TsmBuiltinNode;
-import org.maoif.trusteme.types.*;
+import org.maoif.trusteme.types.TsmExpr;
+import org.maoif.trusteme.types.TsmTextualOutputPort;
+import org.maoif.trusteme.types.TsmVoid;
 
 import java.io.IOException;
 
-@NodeInfo(shortName = "write")
-public class TsmWriteBuiltinNode extends TsmBuiltinNode  {
-    public TsmWriteBuiltinNode() {
-        super("write");
-    }
-
-    protected TsmWriteBuiltinNode(String name) {
-        super(name);
+@NodeInfo(shortName = "display")
+public class TsmDisplayBuiltinNode extends TsmBuiltinNode {
+    public TsmDisplayBuiltinNode() {
+        super("display");
     }
 
     @Override
@@ -25,37 +22,29 @@ public class TsmWriteBuiltinNode extends TsmBuiltinNode  {
 
     @Override
     public TsmVoid executeTsmVoid(VirtualFrame frame) {
-        // (write datum)
-        // (write port datum)
+        // (display obj)
+        // (display obj textual-output-port)
         Object[] args = frame.getArguments();
         if (args.length == 0)
             throw new RuntimeException("Lexical scope is lost");
-        if (args.length != 2 && args.length != 3)
+        if (args.length != 2 && args.length !=3)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        TsmPort port = null;
-        TsmExpr datum = null;
         if (args.length == 3) {
-            if (args[1] instanceof TsmPort p) {
-                port = p;
-                datum = (TsmExpr) args[2];
-            } else {
-                throw new RuntimeException("Not a port: " + args[1]);
-            }
-        } else {
-            port = getContext().getCurrentOutputPort();
-            datum = (TsmExpr) args[1];
+            throw new RuntimeException("Not impl");
         }
 
+        TsmExpr a = (TsmExpr) args[1];
+        var port = getContext().getCurrentOutputPort();
         if (port instanceof TsmTextualOutputPort p) {
             try {
-                p.get().write(datum.write());
+                p.get().write(a.toString());
                 p.get().flush();
             } catch (IOException e) {
                 throw new RuntimeException("Failed to write data");
             }
         } else {
-            throw new RuntimeException("Not a textual output port");
+            throw new RuntimeException("Not a textual output port: " + port);
         }
 
         return TsmVoid.INSTANCE;
