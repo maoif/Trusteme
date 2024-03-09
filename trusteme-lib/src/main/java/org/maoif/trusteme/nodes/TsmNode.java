@@ -74,6 +74,10 @@ public abstract class TsmNode extends Node {
         return TsmTypesGen.expectTsmString(executeGeneric(frame));
     }
 
+    public TsmSymbol executeTsmSymbol(VirtualFrame frame) throws UnexpectedResultException {
+        return TsmTypesGen.expectTsmSymbol(executeGeneric(frame));
+    }
+
     public TsmBignum executeTsmBignum(VirtualFrame frame) throws UnexpectedResultException {
         return TsmTypesGen.expectTsmBignum(executeGeneric(frame));
     }
