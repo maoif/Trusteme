@@ -31,6 +31,10 @@ public final class TrustemeContext {
         return REFERENCE.get(node);
     }
 
+    public Env getEnv() {
+        return env;
+    }
+
     public synchronized TsmPort getCurrentInputPort() {
         return this._in;
     }
