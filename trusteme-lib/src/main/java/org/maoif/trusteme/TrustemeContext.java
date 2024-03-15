@@ -7,6 +7,8 @@ import com.oracle.truffle.api.nodes.Node;
 
 import org.maoif.trusteme.types.*;
 
+import java.util.Map;
+
 public final class TrustemeContext {
     private final TrustemeLanguage language;
     @CompilerDirectives.CompilationFinal
@@ -31,8 +33,16 @@ public final class TrustemeContext {
         return REFERENCE.get(node);
     }
 
+    public TrustemeLanguage getLanguage() {
+        return this.language;
+    }
+
     public Env getEnv() {
         return env;
+    }
+
+    public Map<String, TsmExpr> getTopEnv() {
+        return this.language.getTopEnv();
     }
 
     public synchronized TsmPort getCurrentInputPort() {
