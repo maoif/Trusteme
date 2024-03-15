@@ -1,4 +1,5 @@
 (define undefined-var (lambda (x) (error 'parser '"attempt to reference undefined variable" x)))
+(define todo (lambda (who) (error who '"Not implemented yet")))
 
 (define caar   (lambda (x) (car (car x))))
 (define cddr   (lambda (x) (cdr (cdr x))))
@@ -127,6 +128,78 @@
               (loop '() e*))
             (error 'reverse '"Not a list" e*)))))
 
+(define $append1!
+  (lambda (who ls1 ls2)
+    (if (list? ls1)
+        (letrec ([loop (lambda (ls1)
+                         (if (null? (cdr ls1))
+                             (set-cdr! ls1 ls2)
+                             (loop (cdr ls1))))])
+          (loop ls1)
+          ls1)
+        (error who '"Not a proper list" ls1))))
+
+(define list-copy
+  (lambda (ls)
+    (if (null? ls)
+        ls
+        (if (list? ls)
+            ((lambda (lb)
+               (letrec ([loop (lambda (ls)
+                                (if (null? ls)
+                                    (lb)
+                                    (begin (lb (car ls))
+                                           (loop (cdr ls)))))])
+                 (loop ls)))
+             ($make-list-builder))
+            (error 'list-copy '"Not a proper list" ls)))))
+
+(define list-copy-improper
+  (lambda (ls)
+    (if (null? ls)
+        ls
+        (if (pair? ls)
+            (letrec ([loop (lambda (ls)
+                             (if (null? ls)
+                                 ls
+                                 (if (pair? (cdr ls))
+                                     (cons (car ls) (loop (cdr ls)))
+                                     (cons (car ls) (cdr ls)))))])
+              (loop ls))
+            (error 'list-copy-improper '"Not a list" ls)))))
+
+(define append
+  (lambda args
+    (if (fx= '0 (length args))
+        '()
+        ((lambda (ls obj)
+           (if (null? ls)
+               (if (null? obj)
+                   '()
+                   (if (pair? (car obj))
+                       (if (null? (cdr obj))
+                           (list-copy-improper (car obj))
+                           (apply append obj))
+                       (if (null? (cdr obj))
+                           (car obj)
+                           (error 'append '"Not a list" (car obj)))))
+               (if (pair? ls)
+                   (if (null? obj)
+                       (list-copy-improper ls)
+                       (if (null? (car obj))
+                           (apply append ls (cdr obj))
+                           (if (pair? (car obj))
+                               (cons (car ls) (apply append (cdr ls) obj))
+                               (if (null? (cdr obj))
+                                   ($append1! 'append (list-copy ls) (car obj))
+                                   (error 'append '"Not a list" (car obj))))))
+                   (error 'append '"Not a list" ls))))
+         (car args) (cdr args)))))
+
+(define append!
+  (lambda (ls . obj)
+    (error 'append! '"Not impl")))
+
 (define $assp
   (lambda (who pred ls)
     (letrec ([loop
@@ -184,3 +257,268 @@
 (define assq  (lambda (x ls) ($assp 'assq ($gen-eq? x) ls)))
 (define assv  (lambda (x ls) ($assp 'assv ($gen-eqv? x) ls)))
 (define assoc (lambda (x ls) ($assp 'assoc ($gen-equal? x) ls)))
+
+(define fold-left
+  (lambda ()
+    (todo 'fold-left)))
+
+(define fold-right
+  (lambda ()
+    (todo 'fold-right)))
+
+(define with-input-from-file
+  (lambda (file th)
+    ((lambda (old-in)
+       ((lambda (in)
+          (begin (current-input-port in)
+                 ((lambda (res)
+                    (close-port in)
+                    (current-input-port old-in)
+                    res)
+                  (th))))
+        (open-input-file file)))
+     (current-input-port))))
+
+(define with-output-to-file
+  (lambda (file th)
+    ((lambda (old-out)
+       ((lambda (out)
+          (begin (current-output-port out)
+                 ((lambda (res)
+                    (close-port out)
+                    (current-output-port old-out)
+                    res)
+                  (th))))
+        (open-output-file file)))
+     (current-output-port))))
+
+
+(define dynamic-wind
+  (lambda (pre th post)
+    (pre)
+    ((lambda (res)
+       (post)
+       res)
+     (th))))
+
+(define sorted?
+  (lambda (pred e*)
+    (letrec ([loop (lambda (e*)
+                     (if (null? (cdr e*))
+                         '#t
+                         (if (pred (car e*) (cadr e*))
+                             (loop (cdr e*))
+                             '#f)))])
+      (loop e*))))
+
+(define char=?
+  (lambda (c . cs)
+    (if (char? c)
+        (if (null? cs)
+            '#t
+            (sorted? equal? (cons c cs)))
+        (error 'char=? '"Not a character" c))))
+
+(define char<?
+  (lambda (c . cs)
+    (if (char? c)
+        (if (null? cs)
+            '#t
+            (sorted? $char<1? (cons c cs)))
+        (error 'char<? '"Not a character" c))))
+
+(define char<=?
+  (lambda (c . cs)
+    (if (char? c)
+        (if (null? cs)
+            '#t
+            (sorted? $char<=1? (cons c cs)))
+        (error 'char<=? '"Not a character" c))))
+
+(define char>?
+  (lambda (c . cs)
+    (if (char? c)
+        (if (null? cs)
+            '#t
+            (sorted? (lambda (x y) (not ($char<=1? x y))) (cons c cs)))
+        (error 'char>? '"Not a character" c))))
+
+(define char>=?
+  (lambda (c . cs)
+    (if (char? c)
+        (if (null? cs)
+            '#t
+            (sorted? (lambda (x y) (not ($char<1? x y))) (cons c cs)))
+        (error 'char>=? '"Not a character" c))))
+
+(define string
+  (lambda chars
+    (for-each (lambda (c) (if (char? c)
+                              (void)
+                              (error 'string '"Not a character" c)))
+              chars)
+    ((lambda (str)
+       (letrec ([loop (lambda (cs i)
+                        (if (null? cs)
+                            str
+                            (begin (string-set! str i (car cs))
+                                   (loop (cdr cs) (fx+ i '1)))))])
+         (loop chars '0)))
+     (make-string (length chars)))))
+
+
+(define vector->list
+  (lambda (vec)
+    (if (vector? vec)
+        ((lambda (n)
+           (if (fx= '0 n)
+               '()
+               (letrec ([loop (lambda (res i)
+                                (if (fx= '-1 i)
+                                    res
+                                    (loop (cons (vector-ref vec i)  res) (fx- i '1))))])
+                 (loop '() (fx- n '1)))))
+         (vector-length vec))
+        (error 'vector->list '"Not a vector" vec))))
+
+(define list->vector
+  (lambda (ls)
+    (if (list? ls)
+        (if (null? ls)
+            '#()
+            ((lambda (vec)
+               (letrec ([loop (lambda (ls i)
+                                (if (null? ls)
+                                    vec
+                                    (begin (vector-set! vec i (car ls))
+                                           (loop (cdr ls) (fx+ '1 i)))))])
+                 (loop ls '0)))
+             (make-vector (length ls))))
+        (error 'list->vector '"Not a list" ls))))
+
+(define cons*
+  (lambda args
+    ((lambda (len)
+       (if (fx= '0 len)
+           (error 'cons* '"Invalid number of arguments")
+           (if (fx= '1 len)
+               (car args)
+               (letrec ([loop (lambda (rest)
+                                (if (null? (cdr rest))
+                                    (car rest)
+                                    (cons (car rest) (loop (cdr rest)))))])
+                (loop args)))))
+     (length args))))
+
+(define gensym
+  ((lambda (id)
+     (lambda args
+       (if (null? args)
+           (gensym '"g")
+           (if (fx= '1 (length args))
+               ((lambda (x)
+                  ((lambda (s)
+                     (set! id (fx+ '1 id))
+                     (string->symbol
+                      (string-append '"$" s '"$gensym$" (number->string id))))
+                   (if (symbol? x)
+                       (symbol->string x)
+                       (if (string? x)
+                           x
+                           (error 'gensym '"Expected a symbol or a string" x)))))
+                (car args))
+               (error 'gensym '"Invalid number of arguments")))))
+   '0))
+
+(define $arith-dispatch
+  (lambda (who fix-op flo-op big-op)
+    (lambda (x y)
+      (if (fixnum? x)
+          (if (fixnum? y)
+              (fix-op x y)
+              (if (flonum? y)
+                  (flo-op (fixnum->flonum x) y)
+                  (if (bignum? y)
+                      (big-op ($fix->big x) y)
+                      (error who '"Not a number" y))))
+          (if (flonum? x)
+              (if (fixnum? y)
+                  (flo-op x (fixnum->flonum y))
+                  (if (flonum? y)
+                      (flo-op x y)
+                      (if (bignum? y)
+                          (todo '$arith-dispatch)
+                          (error who '"Not a number" y))))
+              (if (bignum? x)
+                  (if (fixnum? y)
+                      (big-op x ($fix->big y))
+                      (if (flonum? y)
+                          (todo '$arith-dispatch)
+                          (if (bignum? y)
+                              (big-op x y)
+                              (error who '"Not a number" y))))
+                  (error who '"Not a number" x)))))))
+
+(define helper-+
+  ($arith-dispatch '+ fx+ fl+ $big+))
+
+(define helper--
+  ($arith-dispatch '- fx- fl- $big-))
+
+(define helper-*
+  ($arith-dispatch '* fx* fl* $big*))
+
+(define helper-/
+  ($arith-dispatch '/ fx/ fl/ $big/))
+
+(define +
+  (lambda args
+    (if (null? args)
+        '0
+        (letrec ([loop (lambda (res rest)
+                         (if (null? rest)
+                             res
+                             (loop (helper-+ res (car rest)) (cdr rest))))])
+          (loop (car args) (cdr args))))))
+
+(define -
+  (lambda (n . args)
+    (if (null? args)
+        (if (fixnum? n)
+            (fx- n)
+            (if (flonum? n)
+                (fl- n)
+                (if (bignum? n)
+                    ($big- n)
+                    (error '- '"Not a number" n))))
+        (letrec ([loop (lambda (res rest)
+                         (if (null? rest)
+                             res
+                             (loop (helper-- res (car rest)) (cdr rest))))])
+          (loop n args)))))
+
+(define *
+  (lambda args
+    (if (null? args)
+        '1
+        (letrec ([loop (lambda (res rest)
+                         (if (null? rest)
+                             res
+                             (loop (helper-* res (car rest)) (cdr rest))))])
+          (loop (car args) (cdr args))))))
+
+(define /
+  (lambda (n . args)
+    (if (null? args)
+        (if (fixnum? n)
+            (fx/ '1 n)
+            (if (flonum? n)
+                (fl/ '1.0 n)
+                (if (bignum? n)
+                    ($big/ ($fix->big '1) n)
+                    (error '/ '"Not a number" n))))
+        (letrec ([loop (lambda (res rest)
+                         (if (null? rest)
+                             res
+                             (loop (helper-/ res (car rest)) (cdr rest))))])
+          (loop n args)))))
