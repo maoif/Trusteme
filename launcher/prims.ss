@@ -11,6 +11,23 @@
 (define add1 (lambda (x) (+ x '1)))
 (define sub1 (lambda (x) (- x '1)))
 (define zero? (lambda (x) (fx= x '0)))
+(define integer?
+  (lambda (x)
+    (if (fixnum? x)
+        '#t
+        (if (bignum? x)
+            '#t
+            '#f))))
+(define odd?
+  (lambda (x)
+    (if (integer? x)
+        (= '1 (mod x '2))
+        (error 'odd? '"Not an integer" x))))
+(define even?
+  (lambda (x)
+    (if (integer? x)
+        (= '0 (mod x '2))
+        (error 'even? '"Not an integer" x))))
 
 (define $make-list-builder
   (lambda ()
