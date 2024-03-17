@@ -23,18 +23,22 @@ public class TsmCommandLine extends TsmBuiltinNode {
         if (args.length != 1)
             throw new RuntimeException("invalid argument count in " + this.NAME);
 
-        // TODO a better 1st arg?
-        TsmPair res = new TsmPair(new TsmString("trusteme"));
+        TsmPair res = new TsmPair();
         TsmPair next = res;
 
         String[] appArgs = getContext().getEnv().getApplicationArguments();
         for (String appArg : appArgs) {
-            TsmPair p = new TsmPair(new TsmString(appArg));
-            next.setCdr(p);
-            next = p;
+            if (next.car() == TsmNull.INSTANCE) {
+                next.setCar(new TsmString(appArg));
+            } else {
+                TsmPair p = new TsmPair(new TsmString(appArg));
+                next.setCdr(p);
+                next = p;
+            }
+
         }
 
-        return res;
+        return res == next ? TsmNull.INSTANCE : res;
     }
 
 }
