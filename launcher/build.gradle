@@ -43,3 +43,10 @@ tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
+distributions {
+    main {
+        distributionBaseName = 'trusteme'
+    }
+}
+
