@@ -39,7 +39,11 @@ import org.maoif.*;
 import org.maoif.trusteme.nodes.TsmRootNode;
 import org.maoif.trusteme.types.*;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -188,21 +192,41 @@ public class TrustemeLanguage extends TruffleLanguage<TrustemeContext> {
     }
 
     private void loadFile(String file) {
-        var es = Reader.readAll(new File(file));
+        try (var in = getClass().getClassLoader().getResourceAsStream(file)) {
+            if (in == null) {
+                System.err.println("Fail to load " + file);
+                System.exit(-1);
+            }
 
-        es.forEach(e -> {
-            var builder = FrameDescriptor.newBuilder();
-            int lexicalSlot = builder.addSlots(1, FrameSlotKind.Object);
+            InputStreamReader inr = new InputStreamReader(in, StandardCharsets.UTF_8);
+            BufferedReader br = new BufferedReader(inr);
+            StringBuilder sb = new StringBuilder();
 
-            Parser p = new Parser(this, builder);
-            TsmNode body = p.parse(e);
-            var frame = createTopFrame();
+            int c;
+            while ((c = br.read()) != -1) {
+                sb.append((char) c);
+            }
 
-            var mainNode = TsmRootNode.create(this, builder.build(),
-                    lexicalSlot, -1, -1, -1, null, new TsmNode[] { body });
-            var rootNode = new TsmEvalRootNode(this, mainNode, frame);
-            rootNode.getCallTarget().call(topFrame);
-        });
+            var es = Reader.readAll(sb.toString());
+
+            es.forEach(e -> {
+                var builder = FrameDescriptor.newBuilder();
+                int lexicalSlot = builder.addSlots(1, FrameSlotKind.Object);
+
+                Parser p = new Parser(this, builder);
+                TsmNode body = p.parse(e);
+                var frame = createTopFrame();
+
+                var mainNode = TsmRootNode.create(this, builder.build(),
+                        lexicalSlot, -1, -1, -1, null, new TsmNode[] { body });
+                var rootNode = new TsmEvalRootNode(this, mainNode, frame);
+                rootNode.getCallTarget().call(topFrame);
+            });
+
+        } catch (IOException e) {
+            System.err.println("Fail to open " + file);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
