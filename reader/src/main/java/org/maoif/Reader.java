@@ -48,11 +48,16 @@ public class Reader {
      * @param str input string
      * @return a list of data read
      */
-    public static sExpr readALl(String str) {
-        // TODO read until sEof
+    public static List<sExpr> readAll(String str) {
         var src = new SourceBuffer(str);
+        List<sExpr> res = new LinkedList<>();
+        sExpr e = read(src);
+        while (!(e instanceof sEof)) {
+            res.add(e);
+            e = read(src);
+        }
 
-        return null;
+        return res;
     }
 
     public static Object[] readWithNextPosition(char[] cs, int pos) {
@@ -69,15 +74,8 @@ public class Reader {
      */
     public static List<sExpr> readAll(File file) {
         try {
-            var src = new SourceBuffer(Files.readString(file.toPath()));
-            List<sExpr> res = new LinkedList<>();
-            sExpr e = read(src);
-            while (!(e instanceof sEof)) {
-                res.add(e);
-                e = read(src);
-            }
-
-            return res;
+            String str = Files.readString(file.toPath());
+            return readAll(str);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read from " + file);
         }
