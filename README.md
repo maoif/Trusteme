@@ -215,12 +215,12 @@ This is a bad software engineering practice. I'll find time to fix this.
 ## Primitives
 
 Primitives are Scheme procedures written in core-language Scheme,
-it sits at `trusteme-lib/src/main/resources/prims.ss`, along with `psyntax.pp`.
+it sits at `trusteme-lib/src/main/resources/prims.ss`, along with `psyntax.ss`.
 
 Because primitives are written in the core language, all literals (strings, chars, booleans, etc.)
 need to be quoted. There is no `let` form, since it is equivalent to lambda application.
 
-`prims.ss` is loaded before `psyntax.pp`, because `psyntax.pp` uses some procedures 
+`prims.ss` is loaded before `psyntax.ss`, because `psyntax.ss` uses some procedures 
 that are defined in `prims.ss`. These procedures are more easily defined in Scheme
 than in Java.
 

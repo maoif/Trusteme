@@ -60,7 +60,7 @@ public class TrustemeLanguage extends TruffleLanguage<TrustemeContext> {
     public static final String MIME_TYPE = "application/x-tsm";
     public static final TruffleString.Encoding STRING_ENCODING = TruffleString.Encoding.UTF_16;
 
-    private static final String PSYNTAX = "psyntax.pp";
+    private static final String PSYNTAX = "psyntax.ss";
     private static final String PRIMS = "prims.ss";
 
     private VirtualFrame topFrame = null;
