@@ -41,8 +41,7 @@ public class TsmDefineNode extends TsmNode {
             value = call(virtualFrame, e.callTarget, e.args);
         }
 
-        // TODO cache the top frame
-        Frame topFrame = getTopFrame(virtualFrame);
+        Frame topFrame = getContext().getLanguage().getTopFrame();
         var topEnv = (ConcurrentMap<String, TsmExpr>) topFrame.getObject(1);
         topEnv.put(sym.get(), (TsmExpr) value);
 
@@ -58,18 +57,6 @@ public class TsmDefineNode extends TsmNode {
                 args = e.args;
             }
         }
-    }
-
-    private static Frame getTopFrame(VirtualFrame virtualFrame) {
-        Frame f = virtualFrame;
-        while (f.getObject(0) != null) {
-            if (f.getObject(0) instanceof Frame ff)
-                f = ff;
-            else throw new RuntimeException(
-                    "Bad frame structure, first slot should be materialized frame");
-        }
-
-        return f;
     }
 
     @Override
