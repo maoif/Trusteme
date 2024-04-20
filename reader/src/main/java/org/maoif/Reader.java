@@ -92,6 +92,17 @@ public class Reader {
     private static sExpr read(SourceBuffer src) {
         src.skipWhitespaces();
 
+        if (src.peek(';')) {
+            do {
+                do {
+                    src.read();
+                } while (src.peek() != '\n' && src.peek() != (char) -1);
+
+                src.skipWhitespaces();
+
+            } while (src.peek(';'));
+        }
+
         // TODO maybe put the #-prefixed ifs together
         // TODO where to advance()?
         // TODO where to handle the exception?
