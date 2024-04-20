@@ -21,6 +21,7 @@ import org.maoif.trusteme.builtins.hashtable.TsmHashtableRef;
 import org.maoif.trusteme.builtins.hashtable.TsmHashtableSet;
 import org.maoif.trusteme.builtins.hashtable.TsmMakeEqHashtable;
 import org.maoif.trusteme.builtins.io.*;
+import org.maoif.trusteme.builtins.io.string.TsmExtractFromStringOutputPort;
 import org.maoif.trusteme.builtins.io.text.*;
 import org.maoif.trusteme.builtins.number.TsmIsNumber;
 import org.maoif.trusteme.builtins.number.TsmMod;
@@ -118,8 +119,10 @@ public class TrustemeLanguage extends TruffleLanguage<TrustemeContext> {
             new TsmFixLessThanBuiltinNode(), new TsmFixLessThanOrEqualBuiltinNode(),
 
             new TsmIsFlonum(), new TsmFloAdd(), new TsmFloMul(), new TsmFloSub(), new TsmFloDiv(),
+            new TsmFloLess(), new TsmFloGreater(), new TsmFloLessThanOrEqual(),
 
             new TsmIsBignum(), new TsmBigAdd(), new TsmBigMul(), new TsmBigSub(), new TsmBigDiv(),
+            new TsmBigLess(), new TsmBigGreater(), new TsmBigLessThanOrEqual(),
 
             new TsmFixnum2Flonum(), new TsmFix2Big(),
 
@@ -130,7 +133,7 @@ public class TrustemeLanguage extends TruffleLanguage<TrustemeContext> {
 
             new TsmIsBool(), new TsmNot(),
 
-            new TsmIsChar(), new TsmCharLessThan1(), new TsmCharLessThanOrEqualTo1(),
+            new TsmIsChar(), new TsmCharLessThan1(), new TsmCharLessThanOrEqualTo1(), new TsmChar2Int(), new TsmInt2Char(),
             new TsmIsString(), new TsmMakeString(), new TsmStringRef(), new TsmStringSet(),
             new TsmStringLength(), new TsmStringAppend(),
             new TsmIsSymbol(),
@@ -146,6 +149,7 @@ public class TrustemeLanguage extends TruffleLanguage<TrustemeContext> {
             new TsmIsPort(), new TsmIsInputPort(), new TsmIsOutputPort(), new TsmIsBinaryPort(), new TsmIsTextualPort(), new TsmClosePort(),
             new TsmEofObject(), new TsmIsEofObject(), new TsmCurrentInputPort(), new TsmCurrentOutputPort(), new TsmCurrentErrorPort(),
             new TsmDoesFileExist(),  new TsmDeleteFile(),
+            new TsmOpenStringOutputPort(), new TsmExtractFromStringOutputPort(),
 
             new TsmReadBuiltinNode(), new TsmGetDatum(), new TsmWriteBuiltinNode(), new TsmPutDatum(),
 

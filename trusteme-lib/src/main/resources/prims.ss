@@ -309,6 +309,14 @@
         (open-output-file file)))
      (current-output-port))))
 
+(define open-string-output-port
+  (lambda ()
+    ((lambda (x)
+       (values x
+               (lambda ()
+                 ($string-output-port-extract x))))
+     ($open-string-output-port))))
+
 
 (define dynamic-wind
   (lambda (pre th post)
@@ -413,6 +421,19 @@
              (make-vector (length ls))))
         (error 'list->vector '"Not a list" ls))))
 
+(define string->list
+  (lambda (str)
+    (if (fx= '0 (string-length str))
+        '()
+        ((lambda (bd len)
+           (letrec ([loop (lambda (n)
+                            (if (fx= n len)
+                                (bd)
+                                (begin (bd (string-ref str n))
+                                       (loop (fx+ n '1)))))])
+             (loop '0)))
+         ($make-list-builder) (string-length str)))))
+
 (define cons*
   (lambda args
     ((lambda (len)
@@ -424,7 +445,7 @@
                                 (if (null? (cdr rest))
                                     (car rest)
                                     (cons (car rest) (loop (cdr rest)))))])
-                (loop args)))))
+                 (loop args)))))
      (length args))))
 
 (define gensym
@@ -476,6 +497,12 @@
                               (error who '"Not a number" y))))
                   (error who '"Not a number" x)))))))
 
+(define $fx>  (lambda (x y) (not (fx<= x y))))
+(define $fx>= (lambda (x y) (not (fx< x y))))
+
+(define $fl>=  (lambda (x y) (not ($fl< x y))))
+(define $big>= (lambda (x y) (not ($big< x y))))
+
 (define helper-+
   ($arith-dispatch '+ fx+ fl+ $big+))
 
@@ -487,6 +514,21 @@
 
 (define helper-/
   ($arith-dispatch '/ fx/ fl/ $big/))
+
+(define helper-/
+  ($arith-dispatch '/ fx/ fl/ $big/))
+
+(define helper-<
+  ($arith-dispatch '/ fx< $fl< $big>))
+
+(define helper-<=
+  ($arith-dispatch '/ fx<= $fl<= $big<=))
+
+(define helper->
+  ($arith-dispatch '/ $fx> $fl> $big>))
+
+(define helper->=
+  ($arith-dispatch '/ $fx>= $fl>= $big>=))
 
 (define +
   (lambda args
@@ -539,3 +581,58 @@
                              res
                              (loop (helper-/ res (car rest)) (cdr rest))))])
           (loop n args)))))
+
+(define <
+  (lambda (n . args)
+    (if (null? args)
+        '#t
+        (letrec ([loop (lambda (res n rest)
+                         (if (null? rest)
+                             res
+                             (if res
+                                 (loop (helper-< n (car rest)) (car rest) (cdr rest))
+                                 '#f)))])
+          (loop '#t n args)))))
+
+(define <=
+  (lambda (n . args)
+    (if (null? args)
+        '#t
+        (letrec ([loop (lambda (res n rest)
+                         (if (null? rest)
+                             res
+                             (if res
+                                 (loop (helper-<= n (car rest)) (car rest) (cdr rest))
+                                 '#f)))])
+          (loop '#t n args)))))
+
+(define >
+  (lambda (n . args)
+    (if (null? args)
+        '#t
+        (letrec ([loop (lambda (res n rest)
+                         (if (null? rest)
+                             res
+                             (if res
+                                 (loop (helper-> n (car rest)) (car rest) (cdr rest))
+                                 '#f)))])
+          (loop '#t n args)))))
+
+(define >=
+  (lambda (n . args)
+    (if (null? args)
+        '#t
+        (letrec ([loop (lambda (res n rest)
+                         (if (null? rest)
+                             res
+                             (if res
+                                 (loop (helper->= n (car rest)) (car rest) (cdr rest))
+                                 '#f)))])
+          (loop '#t n args)))))
+
+(define modulo fxmod)
+(define remainder fxremainder)
+
+(define quotient
+  (lambda (n1 n2)
+    (fx/ n1 n2)))
