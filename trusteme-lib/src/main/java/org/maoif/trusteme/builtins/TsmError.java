@@ -32,13 +32,8 @@ public class TsmError extends TsmBuiltinNode {
         var msg = args[2];
         var irrts = new Object[args.length - 3];
         System.arraycopy(args, 3, irrts, 0, args.length - 3);
-        if (who instanceof TsmSymbol w && msg instanceof TsmString msgStr) {
-            var m = String.format("who: %s, msg: %s, irritant: %s",
-                    w.get(), msgStr.get(), Arrays.toString(irrts));
-            throw new RuntimeException(m);
-        }
-
-        CompilerDirectives.shouldNotReachHere();
-        return TsmVoid.INSTANCE;
+        var m = String.format("who: %s, msg: %s, irritant: %s",
+                who, msg, Arrays.toString(irrts));
+        throw new RuntimeException(m);
     }
 }
