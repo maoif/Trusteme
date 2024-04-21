@@ -221,6 +221,9 @@ public class TrustemeTests {
         test("(equal? (make-vector '0) '#())");
         test("(equal? (make-vector '3) '#( 0 0 0 ))");
         test("(equal? (make-vector '3 '1) '#(1 1 1))");
+
+        test("(eq? '... (vector-ref '#(... ...) '0))");
+        test("(eq? '... (vector-ref '#(... ...) '1))");
     }
 
     @Test

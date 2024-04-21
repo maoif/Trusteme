@@ -472,15 +472,18 @@ public class Reader {
         while (true) {
             src.skipWhitespaces();
 
-            if (src.peek(')')) {
-                vec.setPosEnd(src.advance(1));
+            int oldPos = src.getPos();
+            char c = src.read();
+            if (c == ')') {
+                vec.setPosEnd(oldPos);
                 vec.set(es.toArray(new sExpr[0]));
 
                 return vec;
-            } else if (src.peek('.')) {
-                throw new LexicalException(src.getSource(), src.getPos(),
+            } else if (c == '.' && Character.isWhitespace(src.peek())) {
+                throw new LexicalException(src.getSource(), oldPos,
                         "dot not allowed in vector");
             } else {
+                src.unread();
                 var e = read(src);
                 if (e instanceof sEof)
                     throw new LexicalException(src.getSource(), src.getPos(),
