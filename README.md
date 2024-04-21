@@ -63,7 +63,6 @@ there are lots of work to do to make Trusteme fancier.
 I put them here, though I may not have time to finish them.
 Contributions are welcomed, of course.
 
-- [] recognize comments in Reader
 - [] a REPL
 - [] record
 - [] `eval`, `expand` and `load`
@@ -81,12 +80,6 @@ There are still some other issues, but I'll just keep them to myself.
 In this section, I describe some implementation details of Trusteme,
 just in case you want to learn something from it or want to contribute
 some code, or both.
-
-```
-- what it does
-- how it's implemented
-- design decisions
-```
 
 ## Reader
 
@@ -367,12 +360,21 @@ TsmRootNode
   ...
 ```
 
+## Procedure Application
+
+All lists in the source code whose `car` does not belong to the set
+of keywords (`begin`, `define`, `set!`, `lambda`, `if`, `letrec`, etc.)
+and are not quoted are parsed as applications and are represented by
+`TsmAppNode`.
+
+In contrast to R6RS's specification of evaluation order,
+Trusteme evaluates expressions in an application left to right,
+starting with the operator.
+
 # Tail Call Optimization: TODO
 
 In order not to blow the stack when writing recursive functions,
 we need some tail call optimization.
-
-tail position
 
 We can identify the following tail positions in the core language:
 
@@ -384,6 +386,14 @@ expr ::= (begin <expr>* <tail>)
          (letrec ([<id> <expr>]*) <expr>* <tail>)
 ```
 
-`TailCallException`
+We use `TailCallException` to model the effect of a tail call, that is,
+the stack is not grown when a tail call occurs, because throwing an exception
+unwinds the stack.
+`TailCallException` encodes the `CallTarget` and the arguments, and is
+handled earlier in the call chain, so that the call to the `CallTarget`
+can happen after the stack is shortened.
 
-`call()` method in places where a nodes is executed in non-tail position
+There are `call()` methods littered in places where a node is executed in non-tail position,
+and the result will be used later.
+This method basically handles all `TailCallException` at that call boundary in case 
+the result of the called subexpression leaks to upper call boundaries.
