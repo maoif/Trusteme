@@ -371,7 +371,7 @@ In contrast to R6RS's specification of evaluation order,
 Trusteme evaluates expressions in an application left to right,
 starting with the operator.
 
-# Tail Call Optimization: TODO
+# Tail Call Optimization
 
 In order not to blow the stack when writing recursive functions,
 we need some tail call optimization.
